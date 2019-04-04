@@ -1,4 +1,4 @@
-package GroupProject;
+package apps;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -29,15 +29,19 @@ public class Tokenizer {
 	     return true;
 	}
 	
-	public String[] tokenize(String s){
+	public String[] generateTokens(String s){
 		List<String> tokens = new ArrayList<String>();
 		String temp = "";
 		for(int i =0; i < s.length(); i++){
-			if(Character.toString(s.charAt(i)).matches("[^+\\-\\*\\/\\(\\)\\%]")){ //(\\d||\\.||e||[a-zA-z])||\\s")
+			if(Character.toString(s.charAt(i)).matches("[^+\\-\\*\\/\\(\\)\\%e]")){ //(\\d||\\.||e||[a-zA-z])||\\s")
 				
 				temp += s.charAt(i);				
 			}
-			else if(Character.toString(s.charAt(i)).matches("([+\\-\\*\\/\\(\\)\\%])")){
+			else if(Character.toString(s.charAt(i)).matches("([+\\-\\*\\/\\(\\)\\%e])")){
+				if(s.charAt(i)=='e'&& (s.substring(i-1,i).matches("[a-zA-Z_]")|| s.substring(i+1,i+2).matches("[a-zA-Z_]"))){
+					temp +=s.charAt(i);
+					continue;
+				}
 				if(temp.length()!=0){
 					String temp2 = temp.trim();
 					
@@ -95,7 +99,7 @@ public class Tokenizer {
 	
 		Tokenizer token = new Tokenizer();
 		String[] result;
-		result = token.tokenize("1.23e + 1");
+		result = token.generateTokens("123e+10");
 		
 		token.validateTokens(result);
 	}
