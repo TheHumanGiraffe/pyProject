@@ -7,6 +7,16 @@ import java.util.EmptyStackException;
 import java.util.List;
 import java.util.Stack;
 
+
+/**
+ * 
+ * Evaluates a given string and returns the result.
+ * 
+ * @author Mathias Ham
+ * @author Micheal Walburn
+ * @author Morgan Patterson
+ *
+ */
 public class Evaluator {
 	String regexVar = "[a-zA-Z_]\\w+|[a-df-zA-DF-Z_]\\w*";
 	String regexInteger = "\\d+";
@@ -14,7 +24,6 @@ public class Evaluator {
 	String regexSciPostfix = String.format("[eE][+\\-]?%s", regexInteger);
 	String regexNumber = String.format("(%s|(^%s$))(%s)?|(%s|(^%s))(%s)|(%s)", regexInteger,regexFloat,regexSciPostfix, regexInteger,regexFloat,regexSciPostfix,regexVar);
 
-	
 	private static void runTest(String[] data, Tokenizer token, String[] tokenized, SimpleParser parser, Evaluator eval){
 		for(int i =0; i < data.length; i++){
 			tokenized = token.generateTokens(data[i]);
@@ -35,6 +44,13 @@ public class Evaluator {
 		}
 	}
 
+	/**
+	 * Converts given tokens into separate values and operators to determine the order of operations 
+	 * for the equation.
+	 * 
+	 * @param tokens - Array of tokenized substrings.
+	 * @return 
+	 */
 	private String toPreFix(String[] tokens){
 		Stack<Float> values = new Stack<Float>();
 		Stack<String> ops = new Stack<String>();
@@ -99,6 +115,12 @@ public class Evaluator {
 		
 	}
 	
+	/**
+	 * Compares two operators to see which one has precendence.
+	 * @param op1
+	 * @param op2
+	 * @return A boolean that determines which operator has precedence.
+	 */
 	public static boolean hasPrecedence(String op1, String op2){
 		if(op2.equals("(") || op2.equals(")"))
 				return false;
@@ -111,6 +133,13 @@ public class Evaluator {
 			return true;
 	}
 	
+	/**
+	 * Applies an operator to two floats and returns the result of the equation
+	 * @param op - Operator
+	 * @param b - float
+	 * @param a - float
+	 * @return Result of an equation relating to a given operation
+	 */
 	public static float applyOp(String op, float b, float a){
 		switch(op){
 		case "+":
