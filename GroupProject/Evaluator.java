@@ -1,5 +1,4 @@
 package apps;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -9,6 +8,8 @@ import java.util.Stack;
 
 
 /**
+ * 
+ * Evaluator.java
  * 
  * Evaluates a given string and returns the result.
  * 
@@ -49,7 +50,7 @@ public class Evaluator {
 	 * for the equation.
 	 * 
 	 * @param tokens - Array of tokenized substrings.
-	 * @return 
+	 * @return A single String value will get returned back
 	 */
 	private String toPreFix(String[] tokens){
 		Stack<Float> values = new Stack<Float>();
@@ -123,12 +124,11 @@ public class Evaluator {
 	 */
 	public static boolean hasPrecedence(String op1, String op2){
 		if(op2.equals("(") || op2.equals(")"))
-				return false;
+			return false;
 		if(((op1.equals("*")||op1.equals("/")||op1.equals("%")||op1.equals("//")) && (op2.equals("+") || op2.equals("-"))))
 			return false;
-		if((op1.equals("**")|| op1.equals("e"))  && !op2.equals("**")){
+		if((op1.equals("**")|| op1.equals("e"))  && !op2.equals("**"))
 			return false;
-		}
 		else
 			return true;
 	}
@@ -178,8 +178,6 @@ public class Evaluator {
 		return 0;
 		
 	}
-	
-	
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub

@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 
 /**
+ * 
  * Tokenizer.java
  * 
  * Given a equation as a stirng, validates the individual elements of the equation
@@ -14,6 +15,7 @@ import java.util.StringTokenizer;
  * @author Mathias Ham
  * @author Micheal Walburn
  * @author Morgan Patterson
+ * 
  */
 
 public class Tokenizer {	

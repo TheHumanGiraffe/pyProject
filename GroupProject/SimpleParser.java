@@ -2,6 +2,7 @@ package apps;
 import java.util.Stack;
 
 /**
+ * 
  * SimpleParser.java
  * 
  * Given a tokenized array, validates that the string as a whole is syntaxically vaild.
@@ -10,6 +11,7 @@ import java.util.Stack;
  * @author Mathias Ham
  * @author Micheal Walburn
  * @author Morgan Patterson
+ * 
  */
 
 public class SimpleParser {	
@@ -108,8 +110,8 @@ public class SimpleParser {
 	
 	/**
 	 * Runs the 'removeParentheses' and 'arrayToString' functions and determines if the entire string syntax is valid.
-	 * @param tokens
-	 * @return
+	 * @param tokens - An array of tokenized substrings
+	 * @return Boolean that determines if the given set of tokens are valid or not
 	 */
 	protected boolean parseTokens(String[] tokens){
 		String[] result;
@@ -130,8 +132,8 @@ public class SimpleParser {
 	
 	/**
 	 * Converts the elemnents of a given array of substrings (the 'result' array, etc.)
-	 * @param array
-	 * @return
+	 * @param array - an array of elements given from the 'removeParentheses' function
+	 * @return An array converted back to a String
 	 */
 	private String arrayToString(String[] array){
 		StringBuilder builder = new StringBuilder();
@@ -177,7 +179,7 @@ public class SimpleParser {
 	}
 	
 	/**
-	 * Main validator function
+	 * Main validator function. Given an equation with a type String, checks to see if the string matches the below regex.
 	 * @param s - A String
 	 * @return A Boolean that returns true or false depending if the entire string is valid or not.
 	 */
