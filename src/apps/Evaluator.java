@@ -1,11 +1,14 @@
 package apps;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.EmptyStackException;
+import java.util.List;
 import java.util.Stack;
 
 
 /**
- * 
- * Evaluator.java
  * 
  * Evaluates a given string and returns the result.
  * 
@@ -14,6 +17,26 @@ import java.util.Stack;
  * @author Morgan Patterson
  *
  */
+
+class Input{
+	Integer i;
+	Float f;
+	
+	public Integer getI() {
+		return i;
+	}
+	public void setI(Integer i) {
+		this.i = i;
+	}
+	public Float getF() {
+		return f;
+	}
+	public void setF(Float f) {
+		this.f = f;
+	}
+	
+}
+
 public class Evaluator {
 	String regexVar = "[a-zA-Z_]\\w+|[a-df-zA-DF-Z_]\\w*";
 	String regexInteger = "\\d+";
@@ -46,10 +69,10 @@ public class Evaluator {
 	 * for the equation.
 	 * 
 	 * @param tokens - Array of tokenized substrings.
-	 * @return A single String value will get returned back
+	 * @return A single string
 	 */
 	private String toPreFix(String[] tokens){
-		Stack<Float> values = new Stack<Float>();
+		Stack<Input> values = new Stack<Input>();
 		Stack<String> ops = new Stack<String>();
 		
 		for(int i=0; i < tokens.length; i++){
@@ -59,16 +82,22 @@ public class Evaluator {
 			}
 						
 			if(tokens[i].matches(regexNumber)){
+				Input input = new Input();
 				float toFloat;
 				try{
 					Integer toInt = Integer.parseInt(tokens[i]);
 					toFloat = toInt.floatValue();
+					
+					input.setI(toInt);
+					input.setF(null);
 				}
 				catch(NumberFormatException e){
 					toFloat = Float.parseFloat(tokens[i]);
+					input.setF(toFloat);
+					input.setI(null);
 				}
 				
-				values.push(toFloat);
+				values.push(input);
 			}
 			
 			else if(tokens[i].equals("(")){
@@ -78,19 +107,16 @@ public class Evaluator {
 			else if(tokens[i].equals(")")){
 				
 				while (!ops.isEmpty() && !ops.peek().equals("(")){
-					if(values.size() >1){
-						values.push(applyOp(ops.pop(), values.pop(), values.pop()));
-					}
-					else{
-						values.push(applyOp(ops.pop(), values.pop(), (float) 0.0));
-					}				
+					
+					chooseType(values, ops);
+								
 				}
 				ops.pop();
 			}
 			
 			else if(tokens[i].matches("[\\+\\-\\*\\/\\%]|[\\*]{2}|[\\/]{2}|e")){
 				while(!ops.empty() && hasPrecedence(tokens[i], ops.peek())){
-					values.push(applyOp(ops.pop(), values.pop(), values.pop()));
+					chooseType(values, ops);
 				}
 				ops.push(tokens[i]);
 			}
@@ -99,7 +125,7 @@ public class Evaluator {
 		while(!ops.empty()){
 			try{
 				if(values.size() > 1){
-					values.push(applyOp(ops.pop(), values.pop(), values.pop()));
+					chooseType(values, ops);
 				}
 				ops.pop();
 			}
@@ -107,9 +133,58 @@ public class Evaluator {
 				;
 			}
 		}
+		if(values.peek().getF()!=null){
+			return values.pop().getF().toString();
+		}
+		else{
+			return values.pop().getI().toString();
+		}
 		
-		return values.pop().toString();
-		
+	}
+
+	/**
+	 * Determines the type of a given value (int or float)
+	 * @param values - A stack of given values
+	 * @param ops - A Stack of given operators
+	 */
+	private void chooseType(Stack<Input> values, Stack<String> ops) {
+		if(values.size() >1){
+			if(values.peek().getF() != null){
+				Input tmp = new Input();
+				tmp = values.pop();
+				if(values.peek().getF() != null){
+					values.push(tmp);
+					values.push(applyOp(ops.pop(), values.pop().getF(), values.pop().getF()));
+				}
+				else{
+					values.push(tmp);
+					values.push(applyOp(ops.pop(), values.pop().getF(), values.pop().getI().floatValue()));
+				}
+			}
+			else{
+				Input tmp = new Input();
+				tmp = values.pop();
+				if(values.peek().getF() != null){
+					values.push(tmp);
+					values.push(applyOp(ops.pop(), values.pop().getI().floatValue(), values.pop().getF()));
+	
+				}
+				else{
+					values.push(tmp);
+					values.push(applyOp(ops.pop(), values.pop().getI(), values.pop().getI()));
+	
+				}
+			}
+		}
+		else{
+			if(values.peek().getF() != null){
+				values.push(applyOp(ops.pop(), values.pop().getF(),(float) 0.0));
+			}
+			else{
+				values.push(applyOp(ops.pop(), values.pop().getI(),0));
+
+			}
+		}
 	}
 	
 	/**
@@ -120,11 +195,12 @@ public class Evaluator {
 	 */
 	public static boolean hasPrecedence(String op1, String op2){
 		if(op2.equals("(") || op2.equals(")"))
-			return false;
+				return false;
 		if(((op1.equals("*")||op1.equals("/")||op1.equals("%")||op1.equals("//")) && (op2.equals("+") || op2.equals("-"))))
 			return false;
-		if((op1.equals("**")|| op1.equals("e"))  && !op2.equals("**"))
+		if((op1.equals("**")|| op1.equals("e"))  && !op2.equals("**")){
 			return false;
+		}
 		else
 			return true;
 	}
@@ -136,44 +212,114 @@ public class Evaluator {
 	 * @param a - float
 	 * @return Result of an equation relating to a given operation
 	 */
-	public static float applyOp(String op, float b, float a){
+	public static Input applyOp(String op, float b, float a){
+		Input input = new Input();
 		switch(op){
 		case "+":
-			return a+b;
+			input.setF(a+b);
+			return input;
 		
 		case "-":
-			return a-b;
+			input.setF(a-b);
+			return input;
 		case "*":
-			return a*b;
+			input.setF(a*b);
+			return input;
 		case "%":
 			if(b==0){
 				throw new
                 	UnsupportedOperationException("Cannot divide by zero"); 
 			}
-			return a%b;
+			input.setF(a%b);
+			return input;
 		case"**":
-			return (float) Math.pow(a,b);
+			input.setF((float) Math.pow(a,b));
+			return input;
+			
 		case"e":
-			return (float) (a * Math.pow(10, b));
+			input.setF((float) (a * Math.pow(10, b)));
+			return input;
 			
 		case "/":
 			if(b==0){
 				throw new
                 	UnsupportedOperationException("Cannot divide by zero"); 
 			}
-			return a/b;		
+			input.setF(a/b);
+			return input;
 		
 		case"//":
 			if(b==0){
 				throw new
                 	UnsupportedOperationException("Cannot divide by zero"); 
 			}
-			int c =  (int) (a/b);
-			return c;
+			input.setI((int) (a/b));
+			return input;
 		}
-		return 0;
+		input.setF(null);
+		input.setI(null);
+		return input;
 		
 	}
+	
+	/**
+	 * Alternate of the above applyOp() Function, but with two ints instead of floats
+	 * @param op - Operator
+	 * @param b - An Int
+	 * @param a - Another Int
+	 * @return Result of an equation relating to the given op variable 
+	 */
+	public static Input applyOp(String op, int b, int a){
+		Input input = new Input();
+		switch(op){
+		case "+":
+			input.setI(a+b);
+			return input;
+		
+		case "-":
+			input.setI(a-b);
+			return input;
+		case "*":
+			input.setI(a*b);
+			return input;
+		case "%":
+			if(b==0){
+				throw new
+                	UnsupportedOperationException("Cannot divide by zero"); 
+			}
+			input.setI(a%b);
+			return input;
+		case"**":
+			input.setI((int) Math.pow(a,b));
+			return input;
+			
+		case"e":
+			input.setI((int) (a * Math.pow(10, b)));
+			return input;
+			
+		case "/":
+			if(b==0){
+				throw new
+                	UnsupportedOperationException("Cannot divide by zero"); 
+			}
+			input.setI(a/b);
+			return input;
+		
+		case"//":
+			if(b==0){
+				throw new
+                	UnsupportedOperationException("Cannot divide by zero"); 
+			}
+			input.setI((int) (a/b));
+			return input;
+		}
+		input.setF(null);
+		input.setI(null);
+		return input;
+		
+	}
+	
+	
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
