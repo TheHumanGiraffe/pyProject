@@ -131,7 +131,7 @@ public class SimpleParser {
 	}
 	
 	/**
-	 * Converts the elemnents of a given array of substrings (the 'result' array, etc.)
+	 * Converts the elements of a given array of substrings (the 'result' array, etc.)
 	 * @param array - an array of elements given from the 'removeParentheses' function
 	 * @return An array converted back to a String
 	 */
