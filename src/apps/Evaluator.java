@@ -1,10 +1,5 @@
 package apps;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.EmptyStackException;
-import java.util.List;
 import java.util.Stack;
 
 
@@ -189,8 +184,8 @@ public class Evaluator {
 	
 	/**
 	 * Compares two operators to see which one has precendence.
-	 * @param op1
-	 * @param op2
+	 * @param op1 - One given operator
+	 * @param op2 - Another given operator
 	 * @return A boolean that determines which operator has precedence.
 	 */
 	public static boolean hasPrecedence(String op1, String op2){
@@ -318,8 +313,6 @@ public class Evaluator {
 		return input;
 		
 	}
-	
-	
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
