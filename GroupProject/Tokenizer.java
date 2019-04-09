@@ -3,8 +3,30 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+/**
+ * Tokenizer.java
+ * 
+ * Given a equation as a stirng, validates the individual elements of the equation
+ * (e.g. Numbers, Operators, etc.) are considered valid for the regex strings 'regexVar',
+ * 'regexInteger', 'regexFloat', 'regexSciPostFix', 'regexNumber', 'regexUnaryOperator',
+ * 'regexBinaryOperator', and 'regexParentheses'.
+ * 
+ * @author Mathias Ham
+ * @author Micheal Walburn
+ * @author Morgan Patterson
+ */
 
 public class Tokenizer {	
+	
+	/**
+	 * Validates a given set of substrings to see if they are all individually valid.
+	 * Does not validate the given string as a whole.
+	 * 
+	 * 
+	 * @param tokens - An array of tokenized substrings from the generateTokens
+	 * function
+	 * @return A boolean determining if the all the elements of the array are valid.
+	 */
 	public boolean validateTokens(String[] tokens){
 		String regexVar = "^[a-zA-Z_]*\\w*$";
 		String regexInteger = "\\d+";
@@ -29,6 +51,12 @@ public class Tokenizer {
 	     return true;
 	}
 	
+	/**
+	 * Converts a given string into an array of substrings.
+	 * 
+	 * @param s - A String
+	 * @return A Type String[] array of tokenized substrings
+	 */
 	public String[] generateTokens(String s){
 		List<String> tokens = new ArrayList<String>();
 		String temp = "";

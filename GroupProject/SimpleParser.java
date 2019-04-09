@@ -1,6 +1,17 @@
 package apps;
 import java.util.Stack;
 
+/**
+ * SimpleParser.java
+ * 
+ * Given a tokenized array, validates that the string as a whole is syntaxically vaild.
+ * Fails if invalid syntax, but does not evaluate the given equation.
+ * 
+ * @author Mathias Ham
+ * @author Micheal Walburn
+ * @author Morgan Patterson
+ */
+
 public class SimpleParser {	
 	private static void runTest(String[] data, Tokenizer token, String[] tokenized, SimpleParser parser){
 		for(int i =0; i < data.length; i++){
@@ -94,6 +105,12 @@ public class SimpleParser {
 		System.out.println("-- Invalid expresssions -- ");
 		runTest(exprInvalid, token, tokenized, parser);
 	}	
+	
+	/**
+	 * Runs the 'removeParentheses' and 'arrayToString' functions and determines if the entire string syntax is valid.
+	 * @param tokens
+	 * @return
+	 */
 	protected boolean parseTokens(String[] tokens){
 		String[] result;
 		if(removeParentheses(tokens) != null){
@@ -111,6 +128,11 @@ public class SimpleParser {
 		}		
 	}
 	
+	/**
+	 * Converts the elemnents of a given array of substrings (the 'result' array, etc.)
+	 * @param array
+	 * @return
+	 */
 	private String arrayToString(String[] array){
 		StringBuilder builder = new StringBuilder();
 		for(String s: array){
@@ -120,6 +142,11 @@ public class SimpleParser {
 		return str;	
 	}
 	
+	/**
+	 * Removes the parentheses within a given string to determine if equations within parentheses are valid.
+	 * @param tokens - Array of tokenized substrings
+	 * @return An array containing given problems without parentheses.
+	 */
 	private String[] removeParentheses(String[] tokens){
 		Stack<String> stack = new Stack<String>();
 		Stack<String> reverseStack = new Stack<String>();
@@ -149,6 +176,11 @@ public class SimpleParser {
 		return result;
 	}
 	
+	/**
+	 * Main validator function
+	 * @param s - A String
+	 * @return A Boolean that returns true or false depending if the entire string is valid or not.
+	 */
 	private boolean validate(String s){
 		
 		String regexVar = "[a-zA-Z_]\\w+|[a-df-zA-DF-Z_]\\w*";
