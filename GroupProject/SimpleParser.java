@@ -1,26 +1,34 @@
-package GroupProject;
+package apps;
 import java.util.Stack;
 
-public class SimpleParser {
-	
+/**
+ * SimpleParser.java
+ * 
+ * Given a tokenized array, validates that the string as a whole is syntaxically vaild.
+ * Fails if invalid syntax, but does not evaluate the given equation.
+ * 
+ * @author Mathias Ham
+ * @author Micheal Walburn
+ * @author Morgan Patterson
+ */
+
+public class SimpleParser {	
 	private static void runTest(String[] data, Tokenizer token, String[] tokenized, SimpleParser parser){
 		for(int i =0; i < data.length; i++){
-			tokenized = token.tokenize(data[i]);
+			tokenized = token.generateTokens(data[i]);
 			if(token.validateTokens(tokenized)){
-				if(parser.isExpr(tokenized)){
+				if(parser.parseTokens(tokenized)){
 					System.out.printf("PASS: %s\n", data[i]);
 				}
 				else{
 					System.out.printf("FAIL: %s\n", data[i] );
-				}
-				
+				}				
 			}
 			else{
 				System.out.printf("FAIL!: %s\n", data[i]);
 			}
 		}
 	}
-
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		Tokenizer token = new Tokenizer();
@@ -62,18 +70,9 @@ public class SimpleParser {
 				"1- - - - - + 2**2//50%2",
 				"(1)(2)",
 				"(+1)",
-				"+ + - + +(12*12)/12/(12/12)**(+15)**-+-++-+-+-++15**15//15",
-				"234",
-				"(1+3)",
-				"(1+3) * 45",
-				"(1+ (2+1)) * 45",
-				"(1+(2+1)) * (78+3*15)+45",
-				"123+56*num1",
-				"(123+56*num1)",
-				"(123+56*12-)",
-				"(num1+56*12)",
+				"(1*2+num1)",
+				"num1",
 				"(num1)"
-				
 		};
 		String[] exprInvalid = new String[] {
 				"1 +",
@@ -99,17 +98,20 @@ public class SimpleParser {
 				"123 123",
 				"4 5 + 9**7",
 				"6%%(6+5)",
-				"5*((5)",
-				"1+",
-				"1+*2",
-				"sum1"
+				"5*((5)"
 		};
 		System.out.println("-- Valid expresssions -- ");
 		runTest(exprValid, token, tokenized, parser);
 		System.out.println("-- Invalid expresssions -- ");
 		runTest(exprInvalid, token, tokenized, parser);
 	}	
-	boolean isExpr(String[] tokens){
+	
+	/**
+	 * Runs the 'removeParentheses' and 'arrayToString' functions and determines if the entire string syntax is valid.
+	 * @param tokens
+	 * @return
+	 */
+	protected boolean parseTokens(String[] tokens){
 		String[] result;
 		if(removeParentheses(tokens) != null){
 			result = removeParentheses(tokens);	
@@ -123,67 +125,78 @@ public class SimpleParser {
 		}
 		else{
 			return false;
-		}	
+		}		
 	}
 	
+	/**
+	 * Converts the elemnents of a given array of substrings (the 'result' array, etc.)
+	 * @param array
+	 * @return
+	 */
 	private String arrayToString(String[] array){
 		StringBuilder builder = new StringBuilder();
 		for(String s: array){
 			builder.append(s);
 		}
 		String str = builder.toString();
-		return str;		
+		return str;	
 	}
 	
+	/**
+	 * Removes the parentheses within a given string to determine if equations within parentheses are valid.
+	 * @param tokens - Array of tokenized substrings
+	 * @return An array containing given problems without parentheses.
+	 */
 	private String[] removeParentheses(String[] tokens){
-		Stack<String> stack = new Stack();
-		Stack<String> reverseStack = new Stack();
+		Stack<String> stack = new Stack<String>();
+		Stack<String> reverseStack = new Stack<String>();
 		String tmp = "";
 		for(int i = 0; i < tokens.length; i++){
 			if(!tokens[i].equals(")")){
 				stack.push(tokens[i]);
 			}
-			else if(tokens[i].equals(")")){
+			else if(tokens[i].equals(")")){				
 				while(!stack.peek().equals("(")){
 					reverseStack.push(stack.pop());
-						
-							
-				}	
-				while(reverseStack.size() >0) {
-					tmp +=reverseStack.pop();
-
 				}
-				//Reverse Reverese #uno #1 hop this time
-				
+				int x =reverseStack.size();
+				for(int j = 0; j <x; j++ ){
+					tmp += reverseStack.pop();
+				}			
 				if(!validate(tmp)){
 					return null;
 				}
 				else{
-
 					stack.pop();
-					stack.push("99");			
+					stack.push("99");					
 				}
-			}	
+			}			
 		}
 		String[] result = stack.toArray(new String[stack.size()]);
 		return result;
 	}
 	
+	/**
+	 * Main validator function
+	 * @param s - A String
+	 * @return A Boolean that returns true or false depending if the entire string is valid or not.
+	 */
 	private boolean validate(String s){
-		String regexVar = "[a-zA-Z_]\\w*";
+		
+		String regexVar = "[a-zA-Z_]\\w+|[a-df-zA-DF-Z_]\\w*";
 		String regexInteger = "\\d+";
 		String regexFloat = "\\d*\\.\\d+|\\d+\\.\\d*|\\s*\\d*\\.\\d+";
-		String regexSciPostfix = String.format("e[+\\-]?%s", regexInteger);
-		String regexNumber = String.format("(%s|(^%s$))(%s)?|(%s|(^%s))(%s)|%s", regexInteger,regexFloat,regexSciPostfix, regexInteger,regexFloat,regexSciPostfix, regexVar);
+		String regexSciPostfix = String.format("[eE][+\\-]?%s", regexInteger);
+		String regexNumber = String.format("(%s|(^%s$))(%s)?|(%s|(^%s))(%s)|(%s)", regexInteger,regexFloat,regexSciPostfix, regexInteger,regexFloat,regexSciPostfix,regexVar);
 		String regexUnaryOperator = "\\s*[\\-\\+\\s]*\\s*";
 		String regexBinaryOperator = "\\s*[\\-\\+\\%]{1}\\s*|\\s*[\\*]{1,2}\\s*|\\s*[\\/]{1,2}\\s*|\\s*[+]{1,}\\s*|\\s*[\\-]{1,}\\s*";
 		String regexExtendedNumber  = String.format("(%s)(%s)", regexUnaryOperator, regexNumber);	
-		//System.out.println(regexNumber);
 		String regexExpr = String.format("^(%s|%s)(?>(%s)(%s)+)*$" , regexNumber, regexExtendedNumber, regexBinaryOperator, regexNumber);
+		
 		if(s.matches(regexExpr)){
 			return true;
 		}
-		else{
+		else{		
 			return false;
 		}
 	}

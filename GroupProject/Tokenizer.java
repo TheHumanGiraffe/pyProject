@@ -1,10 +1,32 @@
-package GroupProject;
+package apps;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
+/**
+ * Tokenizer.java
+ * 
+ * Given a equation as a stirng, validates the individual elements of the equation
+ * (e.g. Numbers, Operators, etc.) are considered valid for the regex strings 'regexVar',
+ * 'regexInteger', 'regexFloat', 'regexSciPostFix', 'regexNumber', 'regexUnaryOperator',
+ * 'regexBinaryOperator', and 'regexParentheses'.
+ * 
+ * @author Mathias Ham
+ * @author Micheal Walburn
+ * @author Morgan Patterson
+ */
 
 public class Tokenizer {	
+	
+	/**
+	 * Validates a given set of substrings to see if they are all individually valid.
+	 * Does not validate the given string as a whole.
+	 * 
+	 * 
+	 * @param tokens - An array of tokenized substrings from the generateTokens
+	 * function
+	 * @return A boolean determining if the all the elements of the array are valid.
+	 */
 	public boolean validateTokens(String[] tokens){
 		String regexVar = "^[a-zA-Z_]*\\w*$";
 		String regexInteger = "\\d+";
@@ -29,15 +51,25 @@ public class Tokenizer {
 	     return true;
 	}
 	
-	public String[] tokenize(String s){
+	/**
+	 * Converts a given string into an array of substrings.
+	 * 
+	 * @param s - A String
+	 * @return A Type String[] array of tokenized substrings
+	 */
+	public String[] generateTokens(String s){
 		List<String> tokens = new ArrayList<String>();
 		String temp = "";
 		for(int i =0; i < s.length(); i++){
-			if(Character.toString(s.charAt(i)).matches("[^+\\-\\*\\/\\(\\)\\%]")){ //(\\d||\\.||e||[a-zA-z])||\\s")
+			if(Character.toString(s.charAt(i)).matches("[^+\\-\\*\\/\\(\\)\\%e]")){ //(\\d||\\.||e||[a-zA-z])||\\s")
 				
 				temp += s.charAt(i);				
 			}
-			else if(Character.toString(s.charAt(i)).matches("([+\\-\\*\\/\\(\\)\\%])")){
+			else if(Character.toString(s.charAt(i)).matches("([+\\-\\*\\/\\(\\)\\%e])")){
+				if(s.charAt(i)=='e'&& (s.substring(i-1,i).matches("[a-zA-Z_]")|| s.substring(i+1,i+2).matches("[a-zA-Z_]"))){
+					temp +=s.charAt(i);
+					continue;
+				}
 				if(temp.length()!=0){
 					String temp2 = temp.trim();
 					
@@ -95,7 +127,7 @@ public class Tokenizer {
 	
 		Tokenizer token = new Tokenizer();
 		String[] result;
-		result = token.tokenize("1.23e + 1");
+		result = token.generateTokens("123e+10");
 		
 		token.validateTokens(result);
 	}
