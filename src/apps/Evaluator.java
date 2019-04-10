@@ -38,25 +38,35 @@ public class Evaluator {
 	String regexFloat = "\\d*\\.\\d+|\\d+\\.\\d*|\\s*\\d*\\.\\d+";
 	String regexSciPostfix = String.format("[eE][+\\-]?%s", regexInteger);
 	String regexNumber = String.format("(%s|(^%s$))(%s)?|(%s|(^%s))(%s)|(%s)", regexInteger,regexFloat,regexSciPostfix, regexInteger,regexFloat,regexSciPostfix,regexVar);
-
-	private static void runTest(String[] data, Tokenizer token, String[] tokenized, SimpleParser parser, Evaluator eval){
-		for(int i =0; i < data.length; i++){
-			tokenized = token.generateTokens(data[i]);
-			if(token.validateTokens(tokenized)){
-				if(parser.parseTokens(tokenized)){
-					
-					
-					System.out.printf("PASS: %s\n", data[i]);
-					System.out.printf("Result for %s: %s \n", data[i], eval.toPreFix(tokenized));
-				}
+	
+	/**
+	 * Calls Tokenizer and and SimpleParser to process the given string. Invoked by Interpreter.java
+	 * @param s - A given String
+	 * @return A result, stating the answer for a given string or if its invalid.
+	 */
+	public String eval(String s){
+		Tokenizer token = new Tokenizer();
+		String[] tokenized;
+		SimpleParser parser = new SimpleParser();
+		
+		tokenized = token.generateTokens(s);
+		if(token.validateTokens(tokenized)){
+			if(parser.parseTokens(tokenized)){
+				
+				String result = toPreFix(tokenized);
+				//System.out.printf("PASS: %s\n", s);
+				System.out.printf("Result for %s: %s \n", s,result );
+				return result;
+			}
 				else{
-					System.out.printf("FAIL: %s\n", data[i] );
+					//System.out.printf("FAIL: %s\n", s );
 				}				
-			}
-			else{
-				System.out.printf("FAIL!: %s\n", data[i]);
-			}
 		}
+		else{
+			//System.out.printf("FAIL!: %s\n", s);
+		}
+		return null;
+			
 	}
 
 	/**
@@ -314,32 +324,36 @@ public class Evaluator {
 		
 	}
 	
+	private static void runTest(String[] data, Tokenizer token, String[] tokenized, SimpleParser parser, Evaluator eval){
+		for(int i =0; i < data.length; i++){
+			tokenized = token.generateTokens(data[i]);
+			if(token.validateTokens(tokenized)){
+				if(parser.parseTokens(tokenized)){
+					
+					
+					System.out.printf("PASS: %s\n", data[i]);
+					System.out.printf("Result for %s: %s \n", data[i], eval.toPreFix(tokenized));
+				}
+				else{
+					System.out.printf("FAIL: %s\n", data[i] );
+				}				
+			}
+			else{
+				System.out.printf("FAIL!: %s\n", data[i]);
+			}
+		}
+	}
+	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		Tokenizer token = new Tokenizer();
-		SimpleParser parser = new SimpleParser();
-		Evaluator eval = new Evaluator();
-		
+		SimpleParser parser = new SimpleParser();		
 		String [] tokenized = null;
 		
+		Evaluator eval = new Evaluator();
 			
 		String[] exprValid = new String[] {
-				"12e2",
-				"1+2",
-				"2*2",
-				"3/4",
-				"5%4",
-				"11//10",
-				"2**10",
-				"1.5+2",
-				"2.5*6.9",
-				"5.5//4.25",
-				"2.3**10.5",
-				"8.05-6.1",
-				"(2*5)+(2+5**2)",
-				/*"9-11",
-				"-9-11"
-				/*"3",
+				"3",
 				"1337",
 				"3.5",
 				"0.123",
@@ -347,13 +361,13 @@ public class Evaluator {
 				"5.",
 				"1.23e+1",
 				"1.23e10",
-				//"-- - + 3",
+				"-- - + 3",
 				"1 + 21",
 				"2.1 + .21",
-				//"1--1",
+				"1--1",
 				"1  +       3",
 				"69+1",
-				//"123++++++1",
+				"123++++++1",
 				"12//3",
 				"3*2",
 				"420/420",
@@ -365,17 +379,17 @@ public class Evaluator {
 				"110*2+2",
 				"2**3",
 				"1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1",
-				//"3-5++0",
+				"3-5++0",
 				"(1+2)*4/6",
 				"(((123+3)))",
 				"2*(3+4)*((5+3)-2)",
 				"(((((((((123**2+5)))))))))",
 				"1- - - - - + 2**2//50%2",
 				"(1)(2)",
-				"(+1)"
-				/*"(1*2+num1)",
+				"(+1)",
+				"(1*2+num1)",
 				"num1",
-				"(num1)"*/
+				"(num1)"
 		};
 		String[] exprInvalid = new String[] {
 				"1 +",
@@ -404,9 +418,8 @@ public class Evaluator {
 				"5*((5)"
 		};
 		System.out.println("-- Valid expresssions -- ");
-		runTest(exprValid, token, tokenized, parser,eval);
-		//System.out.println("-- Invalid expresssions -- ");
-		//runTest(exprInvalid, token, tokenized, parser,eval);
-	}
-
+		runTest(exprValid, token, tokenized, parser, eval);
+		System.out.println("-- Invalid expresssions -- ");
+		runTest(exprInvalid, token, tokenized, parser, eval);
+	}	
 }
