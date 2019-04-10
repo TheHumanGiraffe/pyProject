@@ -3,6 +3,18 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;  // Import the Scanner class
 
+/**
+ * 
+ * Interpreter.java
+ * 
+ * Asks for input in the console, and then runs Tokenizer, SimpleParser, and Evaluator
+ * to return the result.
+ * 
+ * @author Mathias Ham
+ * @author Micheal Walburn
+ * @author Morgan Patterson
+ * 
+ */
 public class Interpreter {
 
 	public static void main(String[] args) {

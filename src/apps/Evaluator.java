@@ -2,8 +2,9 @@ package apps;
 import java.util.EmptyStackException;
 import java.util.Stack;
 
-
 /**
+ * 
+ * Evaluator.java
  * 
  * Evaluates a given string and returns the result.
  * 
@@ -17,19 +18,10 @@ class Input{
 	Integer i;
 	Float f;
 	
-	public Integer getI() {
-		return i;
-	}
-	public void setI(Integer i) {
-		this.i = i;
-	}
-	public Float getF() {
-		return f;
-	}
-	public void setF(Float f) {
-		this.f = f;
-	}
-	
+	public Integer getI() {return i;}
+	public void setI(Integer i) {this.i = i;}
+	public Float getF() {return f;}
+	public void setF(Float f) {this.f = f;}
 }
 
 public class Evaluator {

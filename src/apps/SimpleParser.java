@@ -118,16 +118,9 @@ public class SimpleParser {
 		if(removeParentheses(tokens) != null){
 			result = removeParentheses(tokens);	
 			String statment = arrayToString(result);
-			if(validate(statment)){
-				return true;
-			}
-			else{
-				return false;
-			}
-		}
-		else{
-			return false;
-		}		
+			if(validate(statment)){return true;}
+			else{return false;}
+		} else {return false;}		
 	}
 	
 	/**
@@ -154,20 +147,15 @@ public class SimpleParser {
 		Stack<String> reverseStack = new Stack<String>();
 		String tmp = "";
 		for(int i = 0; i < tokens.length; i++){
-			if(!tokens[i].equals(")")){
-				stack.push(tokens[i]);
-			}
+			if(!tokens[i].equals(")")){stack.push(tokens[i]);}
 			else if(tokens[i].equals(")")){				
-				while(!stack.peek().equals("(")){
-					reverseStack.push(stack.pop());
-				}
+				while(!stack.peek().equals("(")){reverseStack.push(stack.pop());}
+				
 				int x =reverseStack.size();
-				for(int j = 0; j <x; j++ ){
-					tmp += reverseStack.pop();
-				}			
-				if(!validate(tmp)){
-					return null;
-				}
+				
+				for(int j = 0; j <x; j++ ){tmp += reverseStack.pop();}			
+				
+				if(!validate(tmp)){return null;}
 				else{
 					stack.pop();
 					stack.push("99");					
@@ -184,7 +172,6 @@ public class SimpleParser {
 	 * @return A Boolean that returns true or false depending if the entire string is valid or not.
 	 */
 	private boolean validate(String s){
-		
 		String regexVar = "[a-zA-Z_]\\w+|[a-df-zA-DF-Z_]\\w*";
 		String regexInteger = "\\d+";
 		String regexFloat = "\\d*\\.\\d+|\\d+\\.\\d*|\\s*\\d*\\.\\d+";
@@ -195,11 +182,7 @@ public class SimpleParser {
 		String regexExtendedNumber  = String.format("(%s)(%s)", regexUnaryOperator, regexNumber);	
 		String regexExpr = String.format("^(%s|%s)(?>(%s)(%s)+)*$" , regexNumber, regexExtendedNumber, regexBinaryOperator, regexNumber);
 		
-		if(s.matches(regexExpr)){
-			return true;
-		}
-		else{		
-			return false;
-		}
+		if(s.matches(regexExpr)){return true;}
+		else{return false;}
 	}
 }
