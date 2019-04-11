@@ -1,20 +1,13 @@
 package apps;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Scanner;  // Import the Scanner class
 
-/**
- * 
- * Interpreter.java
- * 
- * Asks for input in the console, and then runs Tokenizer, SimpleParser, and Evaluator
- * to return the result.
- * 
- * @author Mathias Ham
- * @author Micheal Walburn
- * @author Morgan Patterson
- * 
- */
+import jdk.nashorn.internal.parser.TokenKind;
+
+import static apps.Constants.REGEXVAR;
+
 public class Interpreter {
 
 	public static void main(String[] args) {
@@ -22,99 +15,89 @@ public class Interpreter {
 		String input = null;
 		Scanner scan = new Scanner(System.in);
 		Evaluator eval = new Evaluator();
-		while(input != "quit"){
+		String[] tokens;
+		Tokenizer tokenizer = new Tokenizer();
+		System.out.println(">>> Python -3.0 by Team");
+		while(true){
+			System.out.printf("\n>>>");
 			input = scan.nextLine();
-			if(checkForVars(input, map)){
-				input = updateInput(input, map);
+			if(input.equals("quit")){
+				System.out.println("Goodbye. Hope you had fun!q");
+				break;
+			}
+			//System.out.println();
+			tokens = tokenizer.tokenize(input);;
+			if(checkForVars(input, map, tokens, tokenizer)){
+				input = updateInput(input, map, tokens, tokenizer);
 				eval.eval(input);
 			}
 			else{
 				eval.eval(input);
 			}
 		}
-		scan.close();
 	}
-
-	/**
-	 * If the given string has a variable, look for it in the HashMap.
-	 * @param input - A given String
-	 * @param map - A set of all defined variables for the current Interpreter session
-	 * @return An updated string with the variables replaced with their values.
-	 */
-	private static String updateInput(String input, Map<String, String> map) {
+	private static String updateInput(String input, Map<String, String> map, String[] tokens, Tokenizer tokenizer) {
+		String[] tempToken;
 		
-		String[] tokens;
-		String regexVar = "[a-zA-Z_]\\w+|[a-df-zA-DF-Z_]\\w*";
-
-		Tokenizer tokenizer = new Tokenizer();
-		tokens = tokenizer.generateTokens(input);
 		
 		for(int i = 0; i < tokens.length; i++){
-			if(tokens[i].matches(regexVar)){
-				if(map.containsKey(tokens[i])){
-					tokens[i] = map.get(tokens[i]);
+			if(tokens[i].matches(REGEXVAR)){
+					if(map.containsKey(tokens[i])){
+						tempToken = tokenizer.tokenize(map.get(tokens[i]));
+						if(containsVars(tempToken, 0, tempToken.length)){
+							updateInput(input, map, tempToken, tokenizer);
+						}
+						tokens[i] = map.get(tokens[i]);
+					}			
 				}
-				
 			}
 		
-			}
-		
+		if(containsVars(tokens, 0, tokens.length)){
+			updateInput(arrayToString(tokens, 0, tokens.length), map, tokens, tokenizer);
+		}
 		return arrayToString(tokens, 0, tokens.length);
-		
 	}
 
-	/**
-	 * Converts the given tokenized array to a String
-	 * @param array - Array to Convert
-	 * @param start - Starting index to convert
-	 * @param end - ending index to convert
-	 * @return a String 'str'
-	 */
+	private static boolean containsVars(String[] tokens, int start, int end) {
+		for(int i =start; i <end; i++){
+			if(tokens[i].matches(REGEXVAR)){
+				return true;		
+				}
+			}
+		return false;
+	}
 	private static String arrayToString(String[] array, int start, int end){
 		StringBuilder builder = new StringBuilder();
 		for (int i =start; i < end; i++){
 			builder.append(array[i]);
 		}
-		
 		String str = builder.toString();
 		return str;	
 	}
-	
-	/**
-	 * Checks if a variable has been created in the HashMap
-	 * @param input - String to be tested.
-	 * @param map - The HashMap
-	 * @return If the variable has been created return true, if not, false.
-	 */
-	private static boolean checkForVars(String input, Map<String, String> map) {
-		String[] tokens;
-		String regexVar = "[a-zA-Z_]\\w+|[a-df-zA-DF-Z_]\\w*";
-		Evaluator eval = new Evaluator();
-		Tokenizer tokenizer = new Tokenizer();
-		tokens = tokenizer.generateTokens(input);
+	private static boolean checkForVars(String input, Map<String, String> map, String[] tokens, Tokenizer tokenizer) {
+	Evaluator eval = new Evaluator();
 		
 		for(int i = 0; i < tokens.length; i++){
-			if(tokens[i].matches(regexVar)){
+			if(tokens[i].matches(REGEXVAR)){
 				if(isAssignment(input)){
 						String right = "";
 						String left = tokens[i];
-						if(checkForVars(arrayToString(tokens, i+2, tokens.length), map)){
-							String tmp = updateInput(input, map);
-							checkForVars(tmp, map);
+						String[] rightTokens;
+						if(containsVars(tokens, i +2, tokens.length)){
+							/*Resolve all variables, the assign then evaluate them */
+							right = arrayToString(tokens,i+2, tokens.length);
+							rightTokens=tokenizer.tokenize(right);
+							right = updateInput("", map, rightTokens, tokenizer);
+							right = eval.eval(right);
 						}
 						else{
-							right = eval.eval(arrayToString(tokens, i+2, tokens.length));
+							right = eval.eval(arrayToString(tokens, i+2, tokens.length));				
 						}
-						map.put(left, right);
-						
+						map.put(left,right);					
 						break;
-					
-					
 				}
 				else{
 					if(map.containsKey(tokens[i])){
-						String var = map.get(tokens[i]);
-						System.out.println(tokens[i] +" = " +var);
 						return true;
 					}
 					else{
@@ -129,11 +112,6 @@ public class Interpreter {
 		return false;
 	}
 
-	/**
-	 * Checks if the given statement is an assignment (e.g. 'a = 2')
-	 * @param input - given String
-	 * @return true if the given statement is an assignment, false if not
-	 */
 	private static boolean isAssignment(String input) {		
 		String[] tokens = input.split("=");
 		if(tokens.length == 2){
