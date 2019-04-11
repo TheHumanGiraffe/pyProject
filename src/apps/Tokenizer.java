@@ -1,7 +1,11 @@
 package apps;
 import java.util.ArrayList;
 import java.util.List;
-
+import static apps.Constants.REGEXVAR;
+import static apps.Constants.REGEXNUMBER;
+import static apps.Constants.REGEXUNARYOPERATOR;
+import static apps.Constants.REGEXBINARYOPERATOR;
+import static apps.Constants.REGEXPARENTHESES;
 /**
  * 
  * Tokenizer.java
@@ -16,9 +20,7 @@ import java.util.List;
  * @author Morgan Patterson
  * 
  */
-
 public class Tokenizer {	
-	
 	/**
 	 * Validates a given set of substrings to see if they are all individually valid.
 	 * Does not validate the given string as a whole.
@@ -29,65 +31,39 @@ public class Tokenizer {
 	 * @return A boolean determining if the all the elements of the array are valid.
 	 */
 	public boolean validateTokens(String[] tokens){
-		String regexVar = "^[a-zA-Z_]*\\w*$";
-		String regexInteger = "\\d+";
-		String regexFloat = "\\d*\\.\\d+|\\d+\\.\\d*|\\s*\\d*\\.\\d+";	// Need fix to reject "."
-		String regexSciPostfix = String.format("[eE][+\\-]?(%s)?", regexInteger);
-		String regexNumber = String.format("(%s|(^%s$))(%s)?|(%s|(^%s))(%s)?", regexInteger,regexFloat,regexSciPostfix, regexInteger,regexFloat,regexSciPostfix);
-		String regexUnaryOperator = "\\s*[\\-\\+\\s]*\\s*";
-		String regexBinaryOperator = "\\s*[\\-\\+\\%]{1}\\s*|\\s*[\\*]{1,2}\\s*|\\s*[\\/]{1,2}\\s*|\\s*[+]{1,}\\s*|\\s*[\\-]{1,}\\s*";
-		String regexParentheses = "\\s*[\\(\\)]{1}\\s*";
-		//String regexExtendedNumber  = String.format("(%s)(%s)", regexUnaryOperator, regexNumber);
-
-	     for (int i=0; i<tokens.length; i++){
-	    	 if(tokens[i].matches(regexNumber)|| tokens[i].matches(regexUnaryOperator)|| tokens[i].matches(regexBinaryOperator)
-	    			 || tokens[i].matches(regexParentheses)|| tokens[i].matches(regexVar)){
-	    		 //System.out.printf("Token %d: %s Is Valid\n",i, tokens[i]);
-	    	 }
-	    	 else{
-	    		 //System.out.printf("Token %d: %s Is NOT VALID\n", i, tokens[i]);
-	    		 return false;
-	    	 }
-	     }
-	     return true;
-	}
-	
+		for (int i=0; i<tokens.length; i++){
+			if(tokens[i].matches(REGEXNUMBER)|| tokens[i].matches(REGEXUNARYOPERATOR)|| tokens[i].matches(REGEXBINARYOPERATOR)
+			|| tokens[i].matches(REGEXPARENTHESES)|| tokens[i].matches(REGEXVAR)){
+				//System.out.printf("Token %d: %s Is Valid\n",i, tokens[i]);
+			}
+			else{
+				//System.out.printf("Token %d: %s Is NOT VALID\n", i, tokens[i]);
+				return false;
+			}
+		}
+	 return true;
+	}	
 	/**
 	 * Converts a given string into an array of substrings.
 	 * 
 	 * @param s - A String
 	 * @return A Type String[] array of tokenized substrings
 	 */
-	public String[] generateTokens(String s){
+	public String[] tokenize(String s){
 		List<String> tokens = new ArrayList<String>();
-		String temp = "";
+		StringBuilder builder = new StringBuilder();
 		for(int i =0; i < s.length(); i++){
-			if(Character.toString(s.charAt(i)).matches("[^+\\-\\*\\/\\(\\)\\%e=]")){ //(\\d||\\.||e||[a-zA-z])||\\s")
-				
-				temp += s.charAt(i);				
+			//Add any char that is not an operator, e, or = to a String
+			if(Character.toString(s.charAt(i)).matches("[^+\\-\\*\\/\\(\\)\\%e=]")){			
+				builder.append(s.charAt(i)); 				
 			}
 			else if(Character.toString(s.charAt(i)).matches("([+\\-\\*\\/\\(\\)\\%e=])")){
 				if(s.charAt(i)=='e'&& (s.substring(i-1,i).matches("[a-zA-Z_]")|| s.substring(i+1,i+2).matches("[a-zA-Z_]"))){
-					temp +=s.charAt(i);
+					builder.append(s.charAt(i)); 
 					continue;
 				}
-				if(temp.length()!=0){
-					String temp2 = temp.trim();
-					
-					if(temp2.length() != 0){
-						if(temp2.charAt(temp2.length()-1)=='e'){
-							tokens.add(temp);
-						}
-						else{
-							tokens.add(temp.trim());
-						}
-						
-						temp="";
-						
-					}
-					
-					
-				}
+				addToken(tokens, builder);	
+				/*Checks for ** and // to group together as 1 token */
 				if((Character.toString(s.charAt(i)).matches("[\\*]") && Character.toString(s.charAt(i+1)).matches("[\\*]"))
 						||Character.toString(s.charAt(i)).matches("[\\/]") && Character.toString(s.charAt(i+1)).matches("[\\/]")){
 					char temp1 = s.charAt(i);
@@ -96,41 +72,70 @@ public class Tokenizer {
 					tokens.add(temp3);
 					i++; //increment i to avoid checking the second * or / since both are added to the same token
 				}
+				/*Looks for extened amount of +'s and -'s (ex: 2++++---+-+-3) and reduces it down to a single + or - based on the number of -'s */
+				else if((Character.toString(s.charAt(i)).matches("[+]")) ||(Character.toString(s.charAt(i)).matches("[\\-]") )){
+					int minusCount = 0;
+					try{
+						while(s.charAt(i) == '+' || s.charAt(i)=='-'|| s.charAt(i)==' '){
+							if(s.charAt(i)=='-'){
+								minusCount++;
+								i++;
+							}
+							else{
+								i++;
+							}
+						}
+					}
+					catch(IndexOutOfBoundsException e){
+						;
+					}
+					/* If there is an Odd amount of -'s then push a - token. Otherwise push a + */
+					if(minusCount%2 != 0){
+						--i; //Decrement count by 1 to account for the above while loop passing the last + or -. Other wise you skip the next item after the last +/-
+						tokens.add("-");
+					}
+					else{
+						--i; //Decrement count by 1 to account for the above while loop passing the last + or -. Other wise you skip the next item after the last +/-
+						tokens.add("+");
+					}
+				}
 				else{
 					tokens.add(Character.toString(s.charAt(i)));
-				}
-							
+				}							
 			}
-		}
-		
-		String temp2 = temp.trim();
-		
-		if(temp2.length() != 0){
-			if(temp2.charAt(temp2.length()-1)=='e'){
-				tokens.add(temp);
-			}
-			else{
-				tokens.add(temp.trim());
-			}
-			
-			temp="";
-			
-		}
-		
+		}			
+		addToken(tokens, builder);		
 		String[] result = new String[tokens.size()];
 		return tokens.toArray(result);
-		
-		
-		
 	}
-	
-	public static void main(String[] args) {
-	
+	private void addToken(List<String> tokens, StringBuilder builder) {
+		if(builder.length() != 0){
+			String temp2 = builder.toString().trim();					
+			if(temp2.length() != 0){
+				if(temp2.charAt(temp2.length()-1)=='e'){
+					tokens.add(builder.toString());
+				}
+				else{
+					tokens.add(builder.toString().trim());
+				}
+				builder.setLength(0);				
+			}
+		}
+	}	
+	public static void main(String[] args) {	
 		Tokenizer token = new Tokenizer();
 		String[] result;
-		result = token.generateTokens("123e+10");
-		
-		token.validateTokens(result);
+		result = token.tokenize("123+56*num1");
+		myPrint(result);
+		result = token.tokenize("(1+23)*9");
+		myPrint(result);
+		result = token.tokenize("aa1=(14-3)*2/a23");
+		myPrint(result);	
 	}
-
+	private static void myPrint(String[] result){
+	for(String s : result){
+				System.out.printf("%s,",s);
+			}
+	System.out.println();
+	}
 }
