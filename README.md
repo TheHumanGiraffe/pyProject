@@ -1,7 +1,10 @@
-# pyProject
-## This is the repository for Mathias Ham, Micheal Walburn, Morgan Patterson's final project  
-## This repo acts as your source folder. So you'll want to cd into your java project until you get src/ as output and then run   
----
-  `git clone https://github.com/TheHumanGiraffe/pyProject src`
+# pyProject  
+ This is the repository for Mathias Ham, Micheal Walburn, Morgan Patterson's final project  
 
- I think...haven't really tried it tbh
+### ToDo 
+
+1. use CFG instead of regex
+2. beautify code
+3. variables assigned to variables
+4. extended numbers (pop first sign, evaluate second number based on remaining signs)
+5. GET THAT EXTRA CREDIT (for loops n shit)
