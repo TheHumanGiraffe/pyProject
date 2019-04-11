@@ -1,9 +1,9 @@
 package apps;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.StringTokenizer;
 
 /**
+ * 
  * Tokenizer.java
  * 
  * Given a equation as a stirng, validates the individual elements of the equation
@@ -14,6 +14,7 @@ import java.util.StringTokenizer;
  * @author Mathias Ham
  * @author Micheal Walburn
  * @author Morgan Patterson
+ * 
  */
 
 public class Tokenizer {	
@@ -61,11 +62,11 @@ public class Tokenizer {
 		List<String> tokens = new ArrayList<String>();
 		String temp = "";
 		for(int i =0; i < s.length(); i++){
-			if(Character.toString(s.charAt(i)).matches("[^+\\-\\*\\/\\(\\)\\%e]")){ //(\\d||\\.||e||[a-zA-z])||\\s")
+			if(Character.toString(s.charAt(i)).matches("[^+\\-\\*\\/\\(\\)\\%e=]")){ //(\\d||\\.||e||[a-zA-z])||\\s")
 				
 				temp += s.charAt(i);				
 			}
-			else if(Character.toString(s.charAt(i)).matches("([+\\-\\*\\/\\(\\)\\%e])")){
+			else if(Character.toString(s.charAt(i)).matches("([+\\-\\*\\/\\(\\)\\%e=])")){
 				if(s.charAt(i)=='e'&& (s.substring(i-1,i).matches("[a-zA-Z_]")|| s.substring(i+1,i+2).matches("[a-zA-Z_]"))){
 					temp +=s.charAt(i);
 					continue;
