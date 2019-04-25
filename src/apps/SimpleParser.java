@@ -1,5 +1,12 @@
 package apps;
-import java.util.Stack;
+
+import static apps.Constants.REGEXCOMP;
+import static apps.Constants.REGEXVAR;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * 
@@ -14,175 +21,254 @@ import java.util.Stack;
  * 
  */
 
-public class SimpleParser {	
-	private static void runTest(String[] data, Tokenizer token, String[] tokenized, SimpleParser parser){
-		for(int i =0; i < data.length; i++){
-			tokenized = token.generateTokens(data[i]);
-			if(token.validateTokens(tokenized)){
-				if(parser.parseTokens(tokenized)){
-					System.out.printf("PASS: %s\n", data[i]);
-				}
-				else{
-					System.out.printf("FAIL: %s\n", data[i] );
-				}				
-			}
-			else{
-				System.out.printf("FAIL!: %s\n", data[i]);
-			}
-		}
-	}
-	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		Tokenizer token = new Tokenizer();
-		SimpleParser parser = new SimpleParser();		
-		String [] tokenized = null;
-			
-		String[] exprValid = new String[] {
-				"3",
-				"1337",
-				"3.5",
-				"0.123",
-				".123",
-				"5.",
-				"1.23e+1",
-				"1.23e10",
-				"-- - + 3",
-				"1 + 21",
-				"2.1 + .21",
-				"1--1",
-				"1  +       3",
-				"69+1",
-				"123++++++1",
-				"12//3",
-				"3*2",
-				"420/420",
-				"5%5",
-				"3.0%5",
-				"12%4",
-				"8%2.5",
-				"3//2+5**2%5",
-				"110*2+2",
-				"2**3",
-				"1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1",
-				"3-5++0",
-				"(1+2)*4/6",
-				"(((123+3)))",
-				"2*(3+4)*((5+3)-2)",
-				"(((((((((123**2+5)))))))))",
-				"1- - - - - + 2**2//50%2",
-				"(1)(2)",
-				"(+1)",
-				"(1*2+num1)",
-				"num1",
-				"(num1)"
-		};
-		String[] exprInvalid = new String[] {
-				"1 +",
-				"Yes",
-				"3.5.5",
-				"3 5",
-				"3/*5",
-				"1.23**e",
-				"1.23e2.0",
-				"1.23e + 1",
-				"1.23 e1",
-				"5%%5",
-				"*/+-*2",
-				"2***3",
-				"12..3 + 2",
-				"1+1+1+",
-				"69++",
-				"70--",
-				"+",
-				"-",
-				"6***9",
-				"<33333333333333333",
-				"123 123",
-				"4 5 + 9**7",
-				"6%%(6+5)",
-				"5*((5)"
-		};
-		System.out.println("-- Valid expresssions -- ");
-		runTest(exprValid, token, tokenized, parser);
-		System.out.println("-- Invalid expresssions -- ");
-		runTest(exprInvalid, token, tokenized, parser);
-	}	
-	
-	/**
-	 * Runs the 'removeParentheses' and 'arrayToString' functions and determines if the entire string syntax is valid.
-	 * @param tokens - An array of tokenized substrings
-	 * @return Boolean that determines if the given set of tokens are valid or not
-	 */
-	protected boolean parseTokens(String[] tokens){
-		String[] result;
-		if(removeParentheses(tokens) != null){
-			result = removeParentheses(tokens);	
-			String statment = arrayToString(result);
-			if(validate(statment)){return true;}
-			else{return false;}
-		} else {return false;}		
-	}
-	
-	/**
-	 * Converts the elements of a given array of substrings (the 'result' array, etc.)
-	 * @param array - an array of elements given from the 'removeParentheses' function
-	 * @return An array converted back to a String
-	 */
-	private String arrayToString(String[] array){
-		StringBuilder builder = new StringBuilder();
-		for(String s: array){
-			builder.append(s);
-		}
-		String str = builder.toString();
-		return str;	
-	}
-	
-	/**
-	 * Removes the parentheses within a given string to determine if equations within parentheses are valid.
-	 * @param tokens - Array of tokenized substrings
-	 * @return An array containing given problems without parentheses.
-	 */
-	private String[] removeParentheses(String[] tokens){
-		Stack<String> stack = new Stack<String>();
-		Stack<String> reverseStack = new Stack<String>();
-		String tmp = "";
-		for(int i = 0; i < tokens.length; i++){
-			if(!tokens[i].equals(")")){stack.push(tokens[i]);}
-			else if(tokens[i].equals(")")){				
-				while(!stack.peek().equals("(")){reverseStack.push(stack.pop());}
-				
-				int x =reverseStack.size();
-				
-				for(int j = 0; j <x; j++ ){tmp += reverseStack.pop();}			
-				
-				if(!validate(tmp)){return null;}
-				else{
-					stack.pop();
-					stack.push("99");					
-				}
-			}			
-		}
-		String[] result = stack.toArray(new String[stack.size()]);
-		return result;
-	}
-	
+public class SimpleParser {		
 	/**
 	 * Main validator function. Given an equation with a type String, checks to see if the string matches the below regex.
 	 * @param s - A String
 	 * @return A Boolean that returns true or false depending if the entire string is valid or not.
 	 */
-	private boolean validate(String s){
-		String regexVar = "[a-zA-Z_]\\w+|[a-df-zA-DF-Z_]\\w*";
-		String regexInteger = "\\d+";
-		String regexFloat = "\\d*\\.\\d+|\\d+\\.\\d*|\\s*\\d*\\.\\d+";
-		String regexSciPostfix = String.format("[eE][+\\-]?%s", regexInteger);
-		String regexNumber = String.format("(%s|(^%s$))(%s)?|(%s|(^%s))(%s)|(%s)", regexInteger,regexFloat,regexSciPostfix, regexInteger,regexFloat,regexSciPostfix,regexVar);
-		String regexUnaryOperator = "\\s*[\\-\\+\\s]*\\s*";
-		String regexBinaryOperator = "\\s*[\\-\\+\\%]{1}\\s*|\\s*[\\*]{1,2}\\s*|\\s*[\\/]{1,2}\\s*|\\s*[+]{1,}\\s*|\\s*[\\-]{1,}\\s*";
-		String regexExtendedNumber  = String.format("(%s)(%s)", regexUnaryOperator, regexNumber);	
-		String regexExpr = String.format("^(%s|%s)(?>(%s)(%s)+)*$" , regexNumber, regexExtendedNumber, regexBinaryOperator, regexNumber);
+	public static boolean isExpr(String s) {
+//		System.out.println("running isAcceptable on string '" + s + "'");
 		
-		if(s.matches(regexExpr)){return true;}
-		else{return false;}
+		//if there's parenthesis, we should probably take care of that
+		if (s.contains("(")){s = handleParentheses(s);}
+		
+//		if (s == null || s == "" || s.matches("\\s*")) {return false;}
+		//if it's a single number, obv we want it to be valid
+		if (isNumber(s)) {return true;}		
+		
+		//then check it 
+		int[][] indexes = getMatches(s,"\\s*\\/{2}|\\s*\\*{2}\\s*|\\s*(?<!e)[\\+|\\-|\\*|\\/|%]\\s*");
+		int i = 0;
+		int stringIndex = 0;
+		int skipped = 0;
+		while (!(indexes[i][0] ==0 && indexes[i][1] ==0)) {
+//			System.out.println("skipped: " + skipped);
+			if (indexes[i+1][0] !=indexes[i][1]) {
+//				System.out.println(s.substring(stringIndex, indexes[i-1][0]));
+//				System.out.println(s.substring(indexes[i][1], s.length()));
+
+			if (isExpr(s.substring(stringIndex, indexes[i-skipped][0])) &&
+				(isExpr(s.substring(indexes[i][1], s.length())))){
+				return true;
+				} 
+			if (isExpr(s.substring(stringIndex, indexes[i][0])) &&
+				(isExpr(s.substring(indexes[i][1], s.length())))) {
+				return true;
+			}
+			}
+			else {skipped++;}
+			i++;
+
+		}
+		return false;
+		
 	}
+	
+	/**
+	 * Gets all matches for regex within a string and returns their positions in an array
+	 * @text the thing to check the regex against
+	 * @regex A regex to match
+	 */
+	public static int[][] getMatches(String text, String regex) {
+	    Pattern pattern = Pattern.compile(regex);
+	    Matcher matcher = pattern.matcher(text);
+	    int[][] locations = new int[500][2];
+	    int i = 0;
+	    // Check all occurrences
+	    String lastFound = new String();
+	    int lastEnd = 0;
+	    while (matcher.find()) {
+//	        System.out.print("Start index: " + matcher.start());
+//	        System.out.print(" End index: " + matcher.end());
+//	        System.out.println(" Found: " + matcher.group());	    	
+		    if (lastEnd == matcher.start()) {
+	        	if (lastFound.matches("//s*\\/\\/\\s*") || lastFound.matches("\\s*\\*\\*\\s*") ||
+	        			lastFound.matches("\\s*%\\s*") || lastFound.matches("\\s*\\*\\s*")    ||
+	        			lastFound.matches("\\s*\\/\\s*")){
+	        		if (matcher.group().matches("\\s*\\/\\s*") || matcher.group().matches("\\s*\\*\\s*")|| matcher.group().matches("\\s*%\\s*")) {
+		        		int[][] x = new int[1][2];
+		        		x[0][0] = 0;
+		        		x[0][1] = 0;
+//			        	System.out.println("returning fail case");
+		        		return x;
+		        	}
+	        	}
+		    }
+	        lastFound = matcher.group();
+	        lastEnd = matcher.end();
+
+//	        System.out.println(i);
+	        locations[i][0] = matcher.start();
+	        locations[i++][1] = matcher.end();
+//	        System.out.println("stuck in a while");
+	    }
+	    //System.out.println("returning");
+	    return locations;
+//	    System.out.println("match not found");
+	}
+		
+	/**
+	 * Removes the parentheses within a given string to determine if equations within parentheses are valid.
+	 * @param tokens - Array of tokenized substrings
+	 * @return An array containing given problems without parentheses.
+	 */
+	public static String handleParentheses(String s) {
+//		System.out.println(s);
+		String temp = "";
+		
+		for (int i=0;i<s.length();i++) {
+			if (s.charAt(i) == ')'){
+				int end = i-1;
+				int j;
+				for (j = end;s.charAt(j)!='(';j--){
+					temp = s.charAt(j) + temp;
+				}
+				//System.out.println(s.charAt(j));
+				//System.out.println(s.charAt(end+1));
+//				System.out.println(temp); //pass this to a calculate function of some sort
+				//pretend this is the calculated value
+				temp = s.substring(0,j)+ "123 "+s.substring(end+2,s.length());
+				
+				s = handleParentheses(temp);
+				return s;
+			}
+		}
+		return s;
+	}
+	
+////////////////////////////////////////context free grammar base cases /////////////////////////////////////
+	public static boolean isInteger(String s) {return s.matches("\\s*\\d+\\s*");}
+	
+	public static boolean isFloat(String s) {return s.matches("\\s*\\d+\\.\\d*\\s*|\\s*\\d*\\.\\d+\\s*");}
+	
+	public static boolean isVar(String s) {return s.matches("\\s*[a-zA-Z_]\\w+|[a-df-zA-DF-Z_]\\w*\\s*");}
+	
+	public static boolean isSciPostfix(String s) {return s.matches("\\s*\\d+(\\.\\d+)?[eE][+-]?\\d+\\s*");}
+			
+	//this needs to handle spaces between operators but not between numbers
+	public static boolean isExtendedNumber(String s) {
+		s = s.replaceAll("\\s", "");
+		//System.out.println(s);
+		int i = 0;
+		String s2 = new String();
+		for(i=0;i<s.length();i++) {
+			if (i == 0 && !(s.charAt(0) == '+' || s.charAt(0) == '-')) {return false;}
+			if (s.charAt(i) == '+' || s.charAt(i) == '-' ) {continue;}
+			else {s2 = s2 + s.charAt(i);}
+		}
+		if (s2.matches("\\d+\\s+\\d+")) {return false;}
+		s2 = s2.replaceAll("\\s", "");
+		return (isInteger(s2) || isFloat(s2) || isSciPostfix(s2));
+	}
+	
+	public static boolean isNumber(String s) {return (isInteger(s) || isFloat(s) || isSciPostfix(s) || isExtendedNumber(s) || isVar(s));}
+
+	protected static boolean isAssignment(String input) {		
+		String[] tokens = input.split("=");
+		if(tokens.length == 2){
+			return true;
+		}
+		
+		return false;
+	}
+
+	protected static boolean isForLoop(String input) {
+		String[] tokens;
+		tokens = input.split("\\s");
+				
+		String REGEXRANGE = "range\\(.+,.+\\)|range\\(.+\\)";
+		try{
+			if(tokens[0].equals("for")){
+				if(tokens[1].matches(REGEXVAR)){
+					if(tokens[2].equals("in")){
+						if(tokens[3].matches(REGEXRANGE)){
+							return true;
+						}
+					}
+				}
+			}
+		}
+		catch(Exception e){
+			return false;
+		}
+		return false;
+	}
+
+	protected static boolean isIf(String input){
+		String[] tokens = Tokenizer.tokenize(input);
+		int compIndex;
+		if(tokens[0].contains("if ")){
+			tokens[0] = tokens[0].replace("if", "");
+			for(int i =0; i< tokens.length; i++){					
+				if(tokens[i].matches(REGEXCOMP)){
+					compIndex = i;
+					/*String left = arrayToString(tokens,0,compIndex);*/
+					String right= Interpreter.arrayToString(tokens,compIndex+1,tokens.length);
+					if(right.contains(":")){
+						return true;
+					}
+					break;
+				}
+			}
+			
+			
+		}
+	
+		return false;
+	}
+
+	protected static boolean isPrint(String input) {
+		if(input.contains("print(")){
+			return true;
+		}
+		return false;
+	}
+
+	protected static void isInstruction(String input,  Map<String,String> map , HashMap<String, InstructionContent> blockInstructionsMap  ) {
+		
+		if(isForLoop(input)){
+			Interpreter.generateForLoop(input, map, blockInstructionsMap);
+			
+		}
+		if(isIf(input)){
+			Interpreter.generateIf(input, map, blockInstructionsMap);
+		}
+		
+	}
+
+	protected static boolean isFunctionDef(String defAndName, String vars) {
+		String[] tokens;
+		tokens = defAndName.split("\\s");
+				if(tokens[0].equals("def")){
+					if(tokens[1].matches(REGEXVAR)){
+							if(vars.matches("([a-zA-Z0-9_]+)+(,\\s*[a-zA-Z0-9_]+)*|\\s*")){
+								return true;
+							}						
+						}
+					}
+		return false;
+	}
+
+	protected static boolean isFunctionCall(String input) {
+		if(input.contains("(") && input.contains(")")){
+			if(input.substring(0,input.indexOf('(')).matches(REGEXVAR) && !input.substring(0,input.indexOf('(')).equals("print")){
+				if(input.substring(input.indexOf('(')+1, input.lastIndexOf(')')).matches("([a-zA-Z0-9_]+)+(,\\s*[a-zA-Z0-9_]+)*|\\s*")){
+					return true;
+				}						
+			}
+		}
+			
+		return false;
+	}
+	
+	protected static boolean containsVars(String[] tokens, int start, int end) {
+		for(int i =start; i <end; i++){
+			if(tokens[i].matches(REGEXVAR)){
+				return true;		
+				}
+			}
+		return false;
+	}
+
 }
