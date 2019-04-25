@@ -2,7 +2,6 @@ package apps;
 
 import static apps.Constants.REGEXCOMP;
 import static apps.Constants.REGEXVAR;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -176,13 +175,13 @@ public class SimpleParser {
 	protected static boolean isForLoop(String input) {
 		String[] tokens;
 		tokens = input.split("\\s");
-				
+		
 		String REGEXRANGE = "range\\(.+,.+\\)|range\\(.+\\)";
 		try{
 			if(tokens[0].equals("for")){
 				if(tokens[1].matches(REGEXVAR)){
 					if(tokens[2].equals("in")){
-						if(tokens[3].matches(REGEXRANGE)){
+						if(Interpreter.arrayToString(tokens, 3, tokens.length).trim().matches(REGEXRANGE)){
 							return true;
 						}
 					}
@@ -219,7 +218,7 @@ public class SimpleParser {
 	}
 
 	protected static boolean isPrint(String input) {
-		if(input.contains("print(")){
+		if(input.contains("print(") && input.charAt(input.length()-1) == ')'){
 			return true;
 		}
 		return false;
@@ -253,9 +252,16 @@ public class SimpleParser {
 	protected static boolean isFunctionCall(String input) {
 		if(input.contains("(") && input.contains(")")){
 			if(input.substring(0,input.indexOf('(')).matches(REGEXVAR) && !input.substring(0,input.indexOf('(')).equals("print")){
-				if(input.substring(input.indexOf('(')+1, input.lastIndexOf(')')).matches("([a-zA-Z0-9_]+)+(,\\s*[a-zA-Z0-9_]+)*|\\s*")){
-					return true;
-				}						
+				//"([a-zA-Z0-9_]+)+(,\\s*[a-zA-Z0-9_]+)*|\\s*"
+				String tmp = input.substring(input.indexOf('(')+1, input.lastIndexOf(')'));
+				String[] params= tmp.split(",");
+				for(int i = 0; i < params.length; i++){
+					if(!SimpleParser.isExpr(params[i].trim())){
+						return false;
+					}
+					
+				}
+				return true;
 			}
 		}
 			
