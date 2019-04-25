@@ -11,13 +11,15 @@ public class InstructionContent {
 	private List<String> paramNames = new ArrayList<String>();
 	private int numOfParams;
 	HashMap<String, String> localVarMap = new HashMap<>(); 
+	HashMap<String, InstructionContent> blockMap = new HashMap<>();
 	
 	//Constructor for Functions
-	InstructionContent(String blockName, List<String> instructions, List<String> paramNames, int numOfParams){
+	InstructionContent(String blockName, List<String> instructions, List<String> paramNames, int numOfParams, HashMap<String, InstructionContent> instructionBlock){
 		this.blockName = blockName;
 		this.instructions = instructions;
 		this.numOfParams = numOfParams;
 		this.paramNames = paramNames;	
+		this.blockMap = instructionBlock;
 	}
 	
 	//Constructor for If Statments & ForLoops
@@ -26,6 +28,10 @@ public class InstructionContent {
 		this.instructions = instructions;	
 	}
 	
+	public HashMap<String, InstructionContent> getBlockMap() {
+		return blockMap;
+	}
+
 	//Constructor for IF Statments with Else Statments
 	InstructionContent(String blockName, List<String> instructions, List<String> altInstructions){
 		this.blockName = blockName;
