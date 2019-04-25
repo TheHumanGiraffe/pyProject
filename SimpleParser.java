@@ -27,7 +27,7 @@ public class SimpleParser {
 		String [] tokenized = null;
 			
 		String[] exprValid = new String[] {
-				"1 2 built in fail case", "1+1e-12","3","1337","3.5","0.123",".123","5.","1.23e+1","1.23e10","-- - + 3","1 + 21",
+				"10 **2", "10 * 2", "1+1e-12","3","1337","3.5","0.123",".123","5.","1.23e+1","1.23e10","-- - + 3","1 + 21",
 				"3*2","420/420","5%5","3.0%5","12%4","8%2.5",
 				"3//2+5**2%5","110*2+2","2**3","1+1+1+1+1+1+1+1+1+1+1+1+1+1+1+1","3-5++0",
 				"(((123+3)))","(1+2)*4/6",	"69+1","123++++++1","12//3","2.1 + .21","1--1","1  +       3",
@@ -41,8 +41,9 @@ public class SimpleParser {
 			{System.out.println(exprValid[i] + " true?: " +x);}
 		}
 		String[] exprInvalid = new String[] {
-				"1 +","3.5.5","3 5","3/*5","1.23**e","1.23e2.0","1.23e + 1","1.23 e1","5%%5","*/+-*2","2***3","12..3 + 2","1+1+1+","69++","70--",
-				"+","-","6***9","<33333333333333333","123 123","4 5 + 9**7","6%%(6+5)","5*((5)","(1)(2)"
+				"1 +","3.5.5","3 5",
+				"3/*5","1.23**e","1.23e2.0","1.23e + 1","1.23 e1","5%%5","*/+-*2","2***3","12..3 + 2","1+1+1+","69++","70--",
+				"6***9","+","-","<33333333333333333","123 123","4 5 + 9**7","6%%(6+5)","5*((5)","(1)(2)"
 		};
 		for (int i = 0;i<exprInvalid.length;i++) {
 			boolean x = (isAcceptable(exprInvalid[i]));
@@ -82,16 +83,24 @@ public class SimpleParser {
 		if (isNumber(s)) {return true;}		
 		
 		//then check it 
-		int[][] indexes = getMatches(s,"\\s*\\/{2}|\\*{2}\\s*|\\s*(?<!e)[\\+|\\-|\\*|\\/|%]\\s*");
+		int[][] indexes = getMatches(s,"\\s*\\/{2}|\\s*\\*{2}\\s*|\\s*(?<!e)[\\+|\\-|\\*|\\/|%]\\s*");
 		int i = 0;
 		int stringIndex = 0;
 		int skipped = 0;
 		while (!(indexes[i][0] ==0 && indexes[i][1] ==0)) {
+//			System.out.println("skipped: " + skipped);
 			if (indexes[i+1][0] !=indexes[i][1]) {
-				if (isAcceptable(s.substring(stringIndex, indexes[i-skipped][0])) &&
-					(isAcceptable(s.substring(indexes[i-skipped][1], s.length()))) ||
-					isAcceptable(s.substring(stringIndex, indexes[i][0])) &&
-					(isAcceptable(s.substring(indexes[i][1], s.length())))){return true;}
+//				System.out.println(s.substring(stringIndex, indexes[i-1][0]));
+//				System.out.println(s.substring(indexes[i][1], s.length()));
+
+			if (isAcceptable(s.substring(stringIndex, indexes[i-skipped][0])) &&
+				(isAcceptable(s.substring(indexes[i][1], s.length())))){
+				return true;
+				} 
+			if (isAcceptable(s.substring(stringIndex, indexes[i][0])) &&
+				(isAcceptable(s.substring(indexes[i][1], s.length())))) {
+				return true;
+			}
 			}
 			else {skipped++;}
 			i++;
@@ -112,10 +121,28 @@ public class SimpleParser {
 	    int[][] locations = new int[500][2];
 	    int i = 0;
 	    // Check all occurrences
+	    String lastFound = new String();
+	    int lastEnd = 0;
 	    while (matcher.find()) {
 //	        System.out.print("Start index: " + matcher.start());
 //	        System.out.print(" End index: " + matcher.end());
-//	        System.out.println(" Found: " + matcher.group());
+//	        System.out.println(" Found: " + matcher.group());	    	
+		    if (lastEnd == matcher.start()) {
+	        	if (lastFound.matches("//s*\\/\\/\\s*") || lastFound.matches("\\s*\\*\\*\\s*") ||
+	        			lastFound.matches("\\s*%\\s*") || lastFound.matches("\\s*\\*\\s*")    ||
+	        			lastFound.matches("\\s*\\/\\s*")){
+	        		if (matcher.group().matches("\\s*\\/\\s*") || matcher.group().matches("\\s*\\*\\s*")|| matcher.group().matches("\\s*%\\s*")) {
+		        		int[][] x = new int[1][2];
+		        		x[0][0] = 0;
+		        		x[0][1] = 0;
+//			        	System.out.println("returning fail case");
+		        		return x;
+		        	}
+	        	}
+		    }
+	        lastFound = matcher.group();
+	        lastEnd = matcher.end();
+
 //	        System.out.println(i);
 	        locations[i][0] = matcher.start();
 	        locations[i++][1] = matcher.end();
