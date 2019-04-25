@@ -41,26 +41,16 @@ class NumberValues{
 
 public class Evaluator {
 	public static String eval(String s){
-		String[] tokenized;
-		
+		String[] tokenized;		
 		tokenized = Tokenizer.tokenize(s);
+		
 		if(Tokenizer.validateTokens(tokenized)){
-			if(SimpleParser.isExpr(s)){
-				
+			if(SimpleParser.isExpr(s)){	
 				String result = toPreFix(tokenized);
-				//System.out.printf("PASS: %s\n", s);
-				//System.out.println(result);
 				return result;
-			}
-				else{
-					//System.out.printf("FAIL: %s\n", s );
-				}				
-		}
-		else{
-			//System.out.printf("FAIL!: %s\n", s);
-		}
-		return null;
-			
+			}			
+		}	
+		return null;		
 	}
 	/**
 	 * Converts given tokens into separate values and operators to determine the order of operations 
@@ -73,19 +63,15 @@ public class Evaluator {
 		Stack<NumberValues> values = new Stack<NumberValues>();
 		Stack<String> ops = new Stack<String>();
 		
-		for(int i=0; i < tokens.length; i++){
-			
+		for(int i=0; i < tokens.length; i++){		
 			if(tokens[i] == " "){
 				continue;
-			}
-						
+			}					
 			if(tokens[i].matches(REGEXNUMBER)){
 				NumberValues input = new NumberValues();
 				float toFloat;
 				try{
 					Integer toInt = Integer.parseInt(tokens[i]);
-					toFloat = toInt.floatValue();
-					
 					input.setI(toInt);
 					input.setF(null);
 				}
@@ -93,8 +79,7 @@ public class Evaluator {
 					toFloat = Float.parseFloat(tokens[i]);
 					input.setF(toFloat);
 					input.setI(null);
-				}
-				
+				}		
 				values.push(input);
 			}
 			
@@ -102,12 +87,9 @@ public class Evaluator {
 				ops.push(tokens[i]);
 			}
 			
-			else if(tokens[i].equals(")")){
-				
-				while (!ops.isEmpty() && !ops.peek().equals("(")){
-					
-					chooseType(values, ops);
-								
+			else if(tokens[i].equals(")")){		
+				while (!ops.isEmpty() && !ops.peek().equals("(")){					
+					chooseType(values, ops);							
 				}
 				ops.pop();
 			}
@@ -125,19 +107,17 @@ public class Evaluator {
 				if(values.size() > 1){
 					chooseType(values, ops);
 				}
-				//ops.pop();
+			}catch( EmptyStackException e){}
+		}
+		try{
+			if(values.peek().getF()!=null){
+				return values.pop().getF().toString();
 			}
-			catch( EmptyStackException e){
-				;
+			else{
+				return values.pop().getI().toString();
 			}
-		}
-		if(values.peek().getF()!=null){
-			return values.pop().getF().toString();
-		}
-		else{
-			return values.pop().getI().toString();
-		}
-		
+		}catch( EmptyStackException e){}
+		return null;	
 	}
 
 	private static void chooseType(Stack<NumberValues> values, Stack<String> ops) {
@@ -205,6 +185,7 @@ public class Evaluator {
 	 * @param a - float
 	 * @return Result of an equation relating to a given operation
 	 */
+	
 	public static NumberValues applyOp(String op, float b, float a){
 		NumberValues input = new NumberValues();
 		switch(op){
@@ -308,7 +289,7 @@ public class Evaluator {
 	protected static void runBlock(HashMap<String, InstructionContent> blockInstructionsMap, String input, Map<String, String> map) {	
 		try{
 			if(SimpleParser.isFunctionCall(input)){
-				runFunction(map,blockInstructionsMap, input);
+				runFunction(map, input);
 				return;
 			}
 			if(SimpleParser.isForLoop(blockInstructionsMap.get(input).getBlockName())){
@@ -329,17 +310,24 @@ public class Evaluator {
 	}
 
 	
-	private static void runFunction(Map<String, String> map, HashMap<String, InstructionContent> blockInstructionsMap, String input) {
+	private static void runFunction(Map<String, String> map, String input) {
 		
 		String[] tokens = Tokenizer.tokenize(input);
 		String funcName = tokens[0];
-		String[] paramValues = tokens[2].split(",");
-		InstructionContent functionProperties = blockInstructionsMap.get(funcName);
+		String params = input.substring(input.indexOf('(')+1, input.lastIndexOf(')'));
+		String[] paramValues = params.split(",");
+		InstructionContent functionProperties = Interpreter.functionMap.get(funcName);
 		List<String> functionInstructions = functionProperties.getInstructions();
 		List<String> paramNames = functionProperties.getParamNames();
 		int numberOfParams = functionProperties.getNumOfParams();
 		HashMap<String,String> localVarMap = functionProperties.getLocalVarMap();
+		HashMap<String,InstructionContent> instructionBlock = functionProperties.getBlockMap();
 		String[] functionInstructionTokens;
+		
+		for(int i = 0; i < paramValues.length; i++){
+			paramValues[i] = updateInput(localVarMap, Tokenizer.tokenize(paramValues[i]));
+			paramValues[i] = eval(paramValues[i]);
+		}
 		
 		for(int i = 0; i < numberOfParams; i++){
 			localVarMap.put(paramNames.get(i), paramValues[i]);
@@ -347,7 +335,7 @@ public class Evaluator {
 		
 		for(int j = 0; j < functionInstructions.size(); j ++){
 			functionInstructionTokens = Tokenizer.tokenize(functionInstructions.get(j));
-			Interpreter.interpret(functionInstructions.get(j), functionInstructionTokens,localVarMap, blockInstructionsMap);
+			Interpreter.interpret(functionInstructions.get(j), functionInstructionTokens,localVarMap, instructionBlock);
 		}
 		
 	}
@@ -359,15 +347,13 @@ public class Evaluator {
 		String input = content.getBlockName();
 		List<String> ifInstructions = content.getInstructions();
 		List<String> elseInstructions = content.getAltInstructions();
-		
-		
+	
 		for(int i = input.indexOf(' ')+1; i <input.lastIndexOf(':'); i ++){
 			builder.append(input.charAt(i));
 		}
 		String condition = builder.toString();
 		conditionTokens= Tokenizer.tokenize(condition);
-		
-		
+			
 		if(evalCondition(conditionTokens, map)){
 			String[] instructionTokens;
 			for(int j = 0; j < ifInstructions.size(); j ++){
@@ -388,7 +374,7 @@ public class Evaluator {
 			HashMap<String, InstructionContent> blockInstructionsMap) {
 		List<String> instructions = content.getInstructions();
 		String [] forLoopTokens = content.getBlockName().split("\\s");
-		String range = forLoopTokens[3];
+		String range = Interpreter.arrayToString(forLoopTokens, 3, forLoopTokens.length);
 		StringBuilder startRangeBuild = new StringBuilder();
 		StringBuilder endRangeBuild = new StringBuilder();
 		for (int i = 6; range.charAt(i)!=',' || range.charAt(i) != ')';i ++){
@@ -408,14 +394,12 @@ public class Evaluator {
 			startRangeBuild.append(range.charAt(i));
 		}
 		
-
 		String startRange = startRangeBuild.toString();
 		String endRange= endRangeBuild.toString();
 		String rangeVar = forLoopTokens[1];
 		
-		
-		startRange = updateInput(startRange, map, Tokenizer.tokenize(startRange));
-		endRange = updateInput(endRange, map, Tokenizer.tokenize(endRange));
+		startRange = updateInput( map, Tokenizer.tokenize(startRange));
+		endRange = updateInput(map, Tokenizer.tokenize(endRange));
 		
 		startRange = eval(startRange);
 		endRange = eval(endRange);
@@ -435,18 +419,17 @@ public class Evaluator {
 	
 	private static boolean evalCondition(String[] conditionTokens, Map<String, String> map) {
 		String conditonOp = getconditionOp(conditionTokens);
-		if(SimpleParser.containsVars(conditionTokens, 0, conditionTokens.length)){
-			
-			String statment = updateInput("", map, conditionTokens);
-			conditionTokens = statment.split(REGEXCOMP);
+		String statment = Interpreter.arrayToString(conditionTokens, 0, conditionTokens.length);	
+		if(SimpleParser.containsVars(conditionTokens, 0, conditionTokens.length)){		
+			statment = updateInput( map, conditionTokens);
 		}
-		
+		conditionTokens = statment.split(REGEXCOMP);
 		
 		String leftString = conditionTokens[0];
 		
-		int left = Integer.parseInt(eval(leftString));
+		float left = Float.parseFloat(eval(leftString));
 		String rightString = conditionTokens[1];	
-		int right = Integer.parseInt(eval(rightString));
+		float right = Float.parseFloat(eval(rightString));
 	
 		switch(conditonOp){
 		case ">":
@@ -462,14 +445,14 @@ public class Evaluator {
 		}
 	}
 	
-	protected static String updateInput(String input, Map<String, String> map, String[] tokens) {
+	protected static String updateInput(Map<String, String> map, String[] tokens) {
 		String[] tempToken;
 		for(int i = 0; i < tokens.length; i++){
 			if(tokens[i].matches(REGEXVAR)){
 					if(map.containsKey(tokens[i])){
 						tempToken = Tokenizer.tokenize(map.get(tokens[i]));
 						if(SimpleParser.containsVars(tempToken, 0, tempToken.length)){
-							updateInput(input, map, tempToken);
+							updateInput(map, tempToken);
 						}
 						tokens[i] = map.get(tokens[i]);
 					}
@@ -480,7 +463,7 @@ public class Evaluator {
 			}
 		
 		if(SimpleParser.containsVars(tokens, 0, tokens.length)){
-			updateInput(Interpreter.arrayToString(tokens, 0, tokens.length), map, tokens);
+			updateInput(map, tokens);
 		}
 		return Interpreter.arrayToString(tokens, 0, tokens.length);
 	}
