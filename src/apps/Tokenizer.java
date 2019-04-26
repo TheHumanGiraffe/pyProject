@@ -76,7 +76,7 @@ public class Tokenizer {
 					char temp1 = s.charAt(i);
 					char temp2 = s.charAt(i+1);				
 					String temp3 = Character.toString(temp1) + Character.toString(temp2);				
-					tokens.add(temp3);
+					tokens.add(temp3.trim());
 					i++; //increment i to avoid checking the second * or / since both are added to the same token
 					continue;
 				}
@@ -85,7 +85,7 @@ public class Tokenizer {
 					char temp1 = s.charAt(i);
 					char temp2 = s.charAt(i+1);				
 					String temp3 = Character.toString(temp1) + Character.toString(temp2);				
-					tokens.add(temp3);
+					tokens.add(temp3.trim());
 					i++; //increment i to avoid checking the second = since both are added to the same token
 					continue;
 				}
@@ -121,7 +121,7 @@ public class Tokenizer {
 					continue;
 				}
 				else{
-					tokens.add(Character.toString(s.charAt(i)));
+					tokens.add(Character.toString(s.charAt(i)).trim());
 				}							
 			}
 		}			
@@ -134,7 +134,7 @@ public class Tokenizer {
 			String temp2 = builder.toString().trim();					
 			if(temp2.length() != 0){
 				if(temp2.charAt(temp2.length()-1)=='e'){
-					tokens.add(builder.toString());
+					tokens.add(builder.toString().trim());
 				}
 				else{
 					tokens.add(builder.toString().trim());
