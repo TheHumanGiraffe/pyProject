@@ -1,5 +1,11 @@
 # pyProject  
  This is the repository for Mathias Ham, Micheal Walburn, Morgan Patterson's final project  
 
-### ToDo 
-1. Nothing
+### Features
+ - basic math
+ - for loops
+ - functions
+ - if else logic
+ - variable comparison
+ - variables
+ - nested structures
