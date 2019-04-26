@@ -31,8 +31,6 @@ public class SimpleParser {
 		
 		//if there's parenthesis, we should probably take care of that
 		if (s.contains("(")){s = handleParentheses(s);}
-		
-//		if (s == null || s == "" || s.matches("\\s*")) {return false;}
 		//if it's a single number, obv we want it to be valid
 		if (isNumber(s)) {return true;}		
 		
@@ -42,11 +40,7 @@ public class SimpleParser {
 		int stringIndex = 0;
 		int skipped = 0;
 		while (!(indexes[i][0] ==0 && indexes[i][1] ==0)) {
-//			System.out.println("skipped: " + skipped);
 			if (indexes[i+1][0] !=indexes[i][1]) {
-//				System.out.println(s.substring(stringIndex, indexes[i-1][0]));
-//				System.out.println(s.substring(indexes[i][1], s.length()));
-
 			if (isExpr(s.substring(stringIndex, indexes[i-skipped][0])) &&
 				(isExpr(s.substring(indexes[i][1], s.length())))){
 				return true;
@@ -61,7 +55,6 @@ public class SimpleParser {
 
 		}
 		return false;
-		
 	}
 	
 	/**
@@ -74,7 +67,6 @@ public class SimpleParser {
 	    Matcher matcher = pattern.matcher(text);
 	    int[][] locations = new int[500][2];
 	    int i = 0;
-	    // Check all occurrences
 	    String lastFound = new String();
 	    int lastEnd = 0;
 	    while (matcher.find()) {
@@ -89,22 +81,17 @@ public class SimpleParser {
 		        		int[][] x = new int[1][2];
 		        		x[0][0] = 0;
 		        		x[0][1] = 0;
-//			        	System.out.println("returning fail case");
+			        	// returning fail case
 		        		return x;
 		        	}
 	        	}
 		    }
 	        lastFound = matcher.group();
 	        lastEnd = matcher.end();
-
-//	        System.out.println(i);
 	        locations[i][0] = matcher.start();
 	        locations[i++][1] = matcher.end();
-//	        System.out.println("stuck in a while");
 	    }
-	    //System.out.println("returning");
 	    return locations;
-//	    System.out.println("match not found");
 	}
 		
 	/**
@@ -113,7 +100,6 @@ public class SimpleParser {
 	 * @return An array containing given problems without parentheses.
 	 */
 	public static String handleParentheses(String s) {
-//		System.out.println(s);
 		String temp = "";
 		
 		for (int i=0;i<s.length();i++) {
@@ -123,12 +109,7 @@ public class SimpleParser {
 				for (j = end;s.charAt(j)!='(';j--){
 					temp = s.charAt(j) + temp;
 				}
-				//System.out.println(s.charAt(j));
-				//System.out.println(s.charAt(end+1));
-//				System.out.println(temp); //pass this to a calculate function of some sort
-				//pretend this is the calculated value
 				temp = s.substring(0,j)+ "123 "+s.substring(end+2,s.length());
-				
 				s = handleParentheses(temp);
 				return s;
 			}
