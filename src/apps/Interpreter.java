@@ -7,12 +7,35 @@ import java.util.List;
 import java.util.Map;
 import java.util.Scanner;  // Import the Scanner class
 
+/*
+     _____       _   _                    ___              
+	|  __ \     | | | |                  / _ \             
+	| |__) |   _| |_| |__   ___  _ __   | | | | _ __   ___ 
+	|  ___/ | | | __| '_ \ / _ \| '_ \  | | | || '_ \ / _ \
+	| |   | |_| | |_| | | | (_) | | | | | |_| || |_) |  __/
+	|_|    \__, |\__|_| |_|\___/|_| |_|  \___(_) .__/ \___|
+			__/ |                              | |         
+    		|___/                              |_|         
+	"lemme just ope right on past ya there"
+	A wannabe python compiler by Mathias Michael and Morgan
+
+ */
+
 
 public class Interpreter {
 
 	private static Scanner scan = new Scanner(System.in);
+	private static IO io = new IO();
+	public static Scanner scanner = io.getScanner();
+
+	
 	static HashMap<String, InstructionContent> functionMap = new HashMap<>();
 	public static void main(String[] args) {
+		
+		
+		
+		
+		
 			HashMap<String, String> varMap = new HashMap<>();
 			
 			String input = null;
@@ -21,23 +44,27 @@ public class Interpreter {
 	
 			//This keeps from saying that "print" is not a assigned Var when using the print() function
 			varMap.put("print", "");
-			/*
-	  ___      _   _                   _   __
-	 | _ \_  _| |_| |_  ___ _ _    ___/ | /  \
-	 |  _/ || |  _| ' \/ _ \ ' \  |___| || () |
-	 |_|  \_, |\__|_||_\___/_||_|     |_(_)__/
-	      |__/
-	
-			 */
-			System.out.println("  ___      _   _                   _   __ \n"+
-								" | _ \\_  _| |_| |_  ___ _ _    ___/ | /  \\ \n"+
-								" |  _/ || |  _| ' \\/ _ \\ ' \\  |___| || () |\n"+
-								" |_|  \\_, |\\__|_||_\\___/_||_|     |_(_)__/ \n"+
-										"     |__/                                 \n");
+
+			System.out.println(
+					"  _____       _   _                    ___ \n"+             
+					" |  __ \\     | | | |                  / _ \\ \n "+             
+					"| |__) |   _| |_| |__   ___  _ __   | | | | _ __   ___ \n"+
+					" |  ___/ | | | __| '_ \\ / _ \\| '_ \\  | | | || '_ \\ / _ \\ \n"+
+					" | |   | |_| | |_| | | | (_) | | | | | |_| || |_) |  __/ \n"+
+					" |_|    \\__, |\\__|_| |_|\\___/|_| |_|  \\___(_) .__/ \\___| \n"+
+					"         __/ |                              | |           \n"+
+					"        |___/                               |_|            \n"+
+					"lemme just ope right on past ya there\n"+
+					"A wannabe python compiler by Mathias Michael and Morgan");
+						
 			while(true){
-				System.out.printf("\n>>>");
-				input = scan.nextLine();
+				System.out.printf("\n>>> ");
+				
+				input = getInput();
 				tokens = Tokenizer.tokenize(input);
+				if(input.equals("")) {
+					continue;
+				}
 				if(SimpleParser.isForLoop(input)){
 					HashMap<String, InstructionContent> blockInstructionsMap = generateBlockMap();
 					 generateForLoop(input, varMap, blockInstructionsMap);
@@ -73,6 +100,13 @@ public class Interpreter {
 			}
 		}
 
+	/***
+	 * Turn String array into a String based on start and end index 
+	 * @param array - array to be converted to string
+	 * @param start - start index of the array
+	 * @param end - end index of the array
+	 * @return - String between the given indexs
+	 */
 	protected static String arrayToString(String[] array, int start, int end){
 		StringBuilder builder = new StringBuilder();
 		for (int i =start; i < end; i++){
@@ -82,6 +116,13 @@ public class Interpreter {
 		return str;
 	}
 
+	/**
+	 * Checks the a string for varaibles and adds it to the hash map if it is an assignment operation
+	 * @param input - A String to be checked for variables
+	 * @param map - The hash map of variables
+	 * @param tokens - A tokenized version of input
+	 * @return - boolean if there was vars
+	 */
 	private static boolean checkForVars(String input, Map<String, String> map, String[] tokens) {
 		for(int i = 0; i < tokens.length; i++){
 			if(tokens[i].matches(REGEXVAR)){
@@ -89,15 +130,19 @@ public class Interpreter {
 						String right = "";
 						String left = tokens[i];
 						String[] rightTokens;
-						if(SimpleParser.containsVars(tokens, i +2, tokens.length)){
+						right = arrayToString(tokens,i+2, tokens.length);
+						rightTokens= Tokenizer.tokenize(right);
+						if(SimpleParser.containsFunctionCall(right)) {
+							right = handleFunc(map, right, rightTokens);
+						}
+						else if(SimpleParser.containsVars(tokens, i +2, tokens.length)){
 							/*Resolve all variables, the assign then evaluate them */
-							right = arrayToString(tokens,i+2, tokens.length);
-							rightTokens= Tokenizer.tokenize(right);
+							
 							right = Evaluator.updateInput(map, rightTokens);
 							right = Evaluator.eval(right);
 						}
 						else{
-							right = Evaluator.eval(arrayToString(tokens, i+2, tokens.length));
+							right = Evaluator.eval(right);
 						}
 						map.put(left,right);
 						break;
@@ -116,18 +161,72 @@ public class Interpreter {
 		return false;
 	}
 
+	private static String handleFunc(Map<String, String> map, String input, String[] rightTokens) {
+		String update = input.substring(input.indexOf('(')+1, input.lastIndexOf(')'));
+		//rightTokens[2] =Evaluator.updateInput(map, update.split("((?<=,)|(?=,))"));
+		while(SimpleParser.containsFunctionCall(input)) {
+			input = arrayToString(rightTokens, 0, rightTokens.length);
+			String functionCall = SimpleParser.getFunctionCall(input);
+			String[] functionCallTokens =Tokenizer.tokenize(functionCall);
+			update = input.substring(functionCall.indexOf('(')+1, functionCall.lastIndexOf(')'));
+			functionCallTokens[2] =Evaluator.updateInput(map, update.split("((?<=,)|(?=,))"));
+			functionCall = arrayToString(functionCallTokens, 0, 3) + ")";
+			
+			InstructionContent content = Evaluator.runFunction(map, functionCall);
+			
+			input = Evaluator.updateFunction(map, input, content);
+		}
+		//interpret(input, rightTokens, map, null);
+		//input = Evaluator.eval(input);
+		//right = content.getReturnStatment();
+		return input;
+	}
+
+	protected static void funcReturn(String input, String[] tokens,  Map<String, String> map, HashMap<String, InstructionContent> blockInstructionsMap, InstructionContent functionProperties) {
+		String toReturn ="";
+		tokens[0] = tokens[0].replace("return ", "");
+		toReturn = arrayToString(tokens, 0, tokens.length);
+		String[] toReturnTokens = Tokenizer.tokenize(toReturn);
+		if(SimpleParser.containsVars(tokens, 0, tokens.length)) {
+			
+			if(SimpleParser.containsFunctionCall(toReturn)) {
+				toReturn = handleFunc(map, toReturn, toReturnTokens);
+			}
+			toReturn = Evaluator.updateInput(map, Tokenizer.tokenize(toReturn));
+			toReturn = Evaluator.eval(toReturn);
+			
+		}
+		else {
+			toReturn = Evaluator.eval(toReturn);
+		}
+		functionProperties.setReturnStatment(toReturn);
+	}
+	/**
+	 * 
+	 * @return - new hashmap to store Block Instructions
+	 */
 	protected static HashMap<String, InstructionContent> generateBlockMap(){
 		HashMap<String, InstructionContent> blockInstructionsMap = new HashMap<>();
 
 		return blockInstructionsMap;
 	}
-	protected static String generateForLoop(String input, Map<String, String> map, HashMap<String, InstructionContent> blockInstructionsMap) {
+	/**
+	 * 
+	 * @param input - String that contains the name of the For loop
+	 * @param map - Hash Map of variables
+	 * @param blockInstructionsMap - HashMap of InstructionsContent
+	 * 
+	 */
+	protected static void generateForLoop(String input, Map<String, String> map, HashMap<String, InstructionContent> blockInstructionsMap) {
+		System.out.print("... ");
+
 		String blockName = input;
-
 		List<String> instructions = new ArrayList<String>();
-
+		
+		//Get input for instructions to be associated with the Loop
 		while(true){
-			input = scan.nextLine();
+			input = getInput();
+			
 			SimpleParser.isInstruction(input, map, blockInstructionsMap);
 			if(input.equals("q")){
 				InstructionContent content = new InstructionContent(blockName, instructions);
@@ -136,11 +235,39 @@ public class Interpreter {
 			}
 			instructions.add(input);
 		}
+	}
 
-
+	private static String getInput() {
+		String input="";
+	//Use this if else block for BOTH  File read in AND  user input
+		if(scanner!= null && scanner.hasNextLine()) {
+			input = scanner.nextLine();
+			System.out.println(input);
+			input = input.trim();
+		}
+		else {
+			input = scan.nextLine().trim();
+		}
+	//Use this if else block for ONLY file read in 
+		/*if(scanner!= null && scanner.hasNextLine()) {
+		input = scanner.nextLine();
+			System.out.println(input);
+			input = input.trim();	
+		}
+		else {
+			return "quit";
+		}*/
+		
+	//Use this line for ONLY user input 
+		//input = scan.nextLine().trim();
 		return input;
 	}
 
+	/***
+	 * 
+	 * @param input- Function defention name
+	 * @param varMap - HashMap of variables
+	 */
 	protected static void generateFunction(String input, HashMap<String, String> varMap) {
 		    List<String> paramNames = new ArrayList<String>();
 			String[] tokens = Tokenizer.tokenize(input);
@@ -156,30 +283,37 @@ public class Interpreter {
 
 		List<String> instructions = new ArrayList<String>();
 
+		//Get input for instructions to be associated with the function
 		while(true){
-			input = scan.nextLine();
-			
+			System.out.print("... ");
+			input = getInput();			
 			SimpleParser.isInstruction(input, varMap, blockInstructionsMap);
-
 			if(input.equals("q")){
 				InstructionContent content = new InstructionContent(funcName, instructions, paramNames, varCount, blockInstructionsMap);
 				functionMap.put(funcName, content);
 				break;
 			}
-
 			instructions.add(input);
-
 		}
-
 	}
 
-	protected static String generateIf(String input, Map<String, String> map, HashMap<String, InstructionContent> blockInstructionsMap) {
+	/***
+	 * 
+	 * @param input - String, Contains the if statment instruction
+	 * @param map - HashMap of InstructionContent
+	 * @param blockInstructionsMap
+	 */
+	protected static void generateIf(String input, Map<String, String> map, HashMap<String, InstructionContent> blockInstructionsMap) {
 		String blockName = input;
 
 		List<String> instructions = new ArrayList<String>();
 		List<String> elseInstructions = new ArrayList<String>();
+		//Get input for instructions to be associated with the If Statement
 		while(true){
-			input = scan.nextLine();
+			System.out.print("... ");
+
+			input = getInput();
+			
 			SimpleParser.isInstruction(input, map,  blockInstructionsMap);
 			if(input.equals("q")){
 				InstructionContent content = new InstructionContent(blockName, instructions);
@@ -187,8 +321,10 @@ public class Interpreter {
 				break;
 			}
 			if(input.equals("else:")){
+				//Get input for instructions to be associated with the Else Statement
 				while(true){
-					input = scan.nextLine();
+					System.out.print("... ");
+					input = getInput();
 					SimpleParser.isInstruction(input, map, blockInstructionsMap);
 					if (input.equals("q")){
 						InstructionContent content = new InstructionContent(blockName,instructions, elseInstructions);
@@ -202,12 +338,18 @@ public class Interpreter {
 			instructions.add(input);
 
 		}
-		return input;
 	}
-
+/**
+ * 
+ * @param input - The instruction to be ran
+ * @param tokens - tokenized version of the instruction
+ * @param map - HasMap of variables
+ * @param blockInstructionsMap - HasMap of InstructionContent
+ */
 	public static void interpret(String input, String[] tokens,  Map<String, String> map, HashMap<String, InstructionContent> blockInstructionsMap){
 		if(SimpleParser.isForLoop(input)|| SimpleParser.isIf(input) ){
 			Evaluator.runBlock(blockInstructionsMap, input,  map);
+			return;
 		}
 		if(tokens.length > 2){
 			if(SimpleParser.isFunctionCall(input)){
@@ -220,16 +362,21 @@ public class Interpreter {
 				return;
 			}
 		}
-		if(SimpleParser.isPrint(input)){
-			StringBuilder builder = new StringBuilder();
-			for(int i = input.indexOf('(')+1; i < input.lastIndexOf(')'); i++){
-				builder.append(input.charAt(i));
-			}
-			String[] printTokens;
-			String whatToPrint= builder.toString();
-			printTokens = Tokenizer.tokenize(whatToPrint);
-			interpret(whatToPrint,  printTokens, map, blockInstructionsMap);
 
+		if(SimpleParser.isPrint(input)){
+				StringBuilder builder = new StringBuilder();
+				for(int j = input.indexOf('(')+1; j < input.lastIndexOf(')'); j++){
+					builder.append(input.charAt(j));
+				}
+				String[] printTokens;
+				String whatToPrint= builder.toString();
+				String[] whatToPrintTokens = whatToPrint.split(";");
+				for(int i = 0; i < whatToPrintTokens.length; i ++) {
+					printTokens = Tokenizer.tokenize(whatToPrintTokens[i]);
+					interpret(whatToPrintTokens[i],  printTokens, map, blockInstructionsMap);
+					
+				}
+				
 			return;
 		}
 		//If the input is a String then print it out

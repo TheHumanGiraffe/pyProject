@@ -2,6 +2,7 @@ package apps;
 
 import static apps.Constants.REGEXCOMP;
 import static apps.Constants.REGEXNUMBER;
+import static apps.Constants.REGEXPARTIALMETHODSIG;
 import static apps.Constants.REGEXVAR;
 
 import java.util.EmptyStackException;
@@ -23,7 +24,8 @@ import java.util.Stack;
 
 class NumberValues{
 	Integer i;
-	Float f;
+	Double d;
+	
 	
 	public Integer getI() {
 		return i;
@@ -31,11 +33,11 @@ class NumberValues{
 	public void setI(Integer i) {
 		this.i = i;
 	}
-	public Float getF() {
-		return f;
+	public Double getD() {
+		return d;
 	}
-	public void setF(Float f) {
-		this.f = f;
+	public void setD(Double d) {
+		this.d = d;
 	}	
 }
 
@@ -69,15 +71,15 @@ public class Evaluator {
 			}					
 			if(tokens[i].matches(REGEXNUMBER)){
 				NumberValues input = new NumberValues();
-				float toFloat;
+				double toDouble;
 				try{
 					Integer toInt = Integer.parseInt(tokens[i]);
 					input.setI(toInt);
-					input.setF(null);
+					input.setD(null);
 				}
 				catch(NumberFormatException e){
-					toFloat = Float.parseFloat(tokens[i]);
-					input.setF(toFloat);
+					toDouble = Double.parseDouble(tokens[i]);
+					input.setD(toDouble);
 					input.setI(null);
 				}		
 				values.push(input);
@@ -110,8 +112,8 @@ public class Evaluator {
 			}catch( EmptyStackException e){}
 		}
 		try{
-			if(values.peek().getF()!=null){
-				return values.pop().getF().toString();
+			if(values.peek().getD()!=null){
+				return values.pop().getD().toString();
 			}
 			else{
 				return values.pop().getI().toString();
@@ -122,24 +124,24 @@ public class Evaluator {
 
 	private static void chooseType(Stack<NumberValues> values, Stack<String> ops) {
 		if(values.size() >1){
-			if(values.peek().getF() != null){
+			if(values.peek().getD() != null){
 				NumberValues tmp = new NumberValues();
 				tmp = values.pop();
-				if(values.peek().getF() != null){
+				if(values.peek().getD() != null){
 					values.push(tmp);
-					values.push(applyOp(ops.pop(), values.pop().getF(), values.pop().getF()));
+					values.push(applyOp(ops.pop(), values.pop().getD(), values.pop().getD()));
 				}
 				else{
 					values.push(tmp);
-					values.push(applyOp(ops.pop(), values.pop().getF(), values.pop().getI().floatValue()));
+					values.push(applyOp(ops.pop(), values.pop().getD(), values.pop().getI().doubleValue()));
 				}
 			}
 			else{
 				NumberValues tmp = new NumberValues();
 				tmp = values.pop();
-				if(values.peek().getF() != null){
+				if(values.peek().getD() != null){
 					values.push(tmp);
-					values.push(applyOp(ops.pop(), values.pop().getI().floatValue(), values.pop().getF()));
+					values.push(applyOp(ops.pop(), values.pop().getI().doubleValue(), values.pop().getD()));
 	
 				}
 				else{
@@ -150,8 +152,8 @@ public class Evaluator {
 			}
 		}
 		else{
-			if(values.peek().getF() != null){
-				values.push(applyOp(ops.pop(), values.pop().getF(),(float) 0.0));
+			if(values.peek().getD() != null){
+				values.push(applyOp(ops.pop(), values.pop().getD(),(double) 0.0));
 			}
 			else{
 				values.push(applyOp(ops.pop(), values.pop().getI(),0));
@@ -179,39 +181,39 @@ public class Evaluator {
 	}
 	
 	/**
-	 * Applies an operator to two floats and returns the result of the equation
+	 * Applies an operator to two floating point integers and returns the result of the equation
 	 * @param op - Operator
-	 * @param b - float
-	 * @param a - float
+	 * @param b - double
+	 * @param a - double
 	 * @return Result of an equation relating to a given operation
 	 */
 	
-	public static NumberValues applyOp(String op, float b, float a){
+	public static NumberValues applyOp(String op, double b, double a){
 		NumberValues input = new NumberValues();
 		switch(op){
 		case "+":
-			input.setF(a+b);
+			input.setD(a+b);
 			return input;
 		
 		case "-":
-			input.setF(a-b);
+			input.setD(a-b);
 			return input;
 		case "*":
-			input.setF(a*b);
+			input.setD(a*b);
 			return input;
 		case "%":
 			if(b==0){
 				throw new
                 	UnsupportedOperationException("Cannot divide by zero"); 
 			}
-			input.setF(a%b);
+			input.setD(a%b);
 			return input;
 		case"**":
-			input.setF((float) Math.pow(a,b));
+			input.setD((double) Math.pow(a,b));
 			return input;
 			
 		case"e":
-			input.setF((float) (a * Math.pow(10, b)));
+			input.setD((double) (a * Math.pow(10, b)));
 			return input;
 			
 		case "/":
@@ -219,7 +221,7 @@ public class Evaluator {
 				throw new
                 	UnsupportedOperationException("Cannot divide by zero"); 
 			}
-			input.setF((float)a/b);
+			input.setD((double)a/b);
 			return input;
 		
 		case"//":
@@ -230,7 +232,7 @@ public class Evaluator {
 			input.setI((int) (a/b));
 			return input;
 		}
-		input.setF(null);
+		input.setD(null);
 		input.setI(null);
 		return input;
 		
@@ -269,7 +271,7 @@ public class Evaluator {
 				throw new
                 	UnsupportedOperationException("Cannot divide by zero"); 
 			}
-			input.setF((float) ((float)a/(float)b));
+			input.setD((double) ((double)a/(double)b));
 			return input;
 		
 		case"//":
@@ -280,7 +282,7 @@ public class Evaluator {
 			input.setI((int) (a/b));
 			return input;
 		}
-		input.setF(null);
+		input.setD(null);
 		input.setI(null);
 		return input;
 		
@@ -310,7 +312,7 @@ public class Evaluator {
 	}
 
 	
-	private static void runFunction(Map<String, String> map, String input) {
+	protected static InstructionContent runFunction(Map<String, String> map, String input) {
 		
 		String[] tokens = Tokenizer.tokenize(input);
 		String funcName = tokens[0];
@@ -320,12 +322,13 @@ public class Evaluator {
 		List<String> functionInstructions = functionProperties.getInstructions();
 		List<String> paramNames = functionProperties.getParamNames();
 		int numberOfParams = functionProperties.getNumOfParams();
-		HashMap<String,String> localVarMap = functionProperties.getLocalVarMap();
+		//HashMap<String,String> localVarMap = functionProperties.getLocalVarMap();
+		HashMap<String, String> localVarMap = new HashMap<>();
 		HashMap<String,InstructionContent> instructionBlock = functionProperties.getBlockMap();
 		String[] functionInstructionTokens;
 		
 		for(int i = 0; i < paramValues.length; i++){
-			paramValues[i] = updateInput(localVarMap, Tokenizer.tokenize(paramValues[i]));
+			paramValues[i] = updateInput(map, Tokenizer.tokenize(paramValues[i]));
 			paramValues[i] = eval(paramValues[i]);
 		}
 		
@@ -334,10 +337,22 @@ public class Evaluator {
 		}
 		
 		for(int j = 0; j < functionInstructions.size(); j ++){
-			functionInstructionTokens = Tokenizer.tokenize(functionInstructions.get(j));
-			Interpreter.interpret(functionInstructions.get(j), functionInstructionTokens,localVarMap, instructionBlock);
+			String instructions = functionInstructions.get(j);
+			functionInstructionTokens = Tokenizer.tokenize(instructions);
+
+			if(SimpleParser.isReturn(instructions)) {
+				Interpreter.funcReturn(input, functionInstructionTokens, localVarMap, instructionBlock, functionProperties);
+				return functionProperties;
+			}
+			Interpreter.interpret(instructions, functionInstructionTokens,localVarMap, instructionBlock);
+			try {
+				if(!instructionBlock.get(instructions).getReturnStatment().equals("")) {
+					functionProperties.setReturnStatment(instructionBlock.get(instructions).getReturnStatment());
+					return functionProperties;
+				}
+			}catch(Exception e) {};
 		}
-		
+		return functionProperties;
 	}
 
 	private static void runIfBlock(Map<String, String> map,  InstructionContent content, HashMap<String, InstructionContent> blockInstructionsMap) {
@@ -357,13 +372,26 @@ public class Evaluator {
 		if(evalCondition(conditionTokens, map)){
 			String[] instructionTokens;
 			for(int j = 0; j < ifInstructions.size(); j ++){
-				instructionTokens = Tokenizer.tokenize(ifInstructions.get(j));
+				String instructions = ifInstructions.get(j);
+
+				instructionTokens = Tokenizer.tokenize(instructions);
+				if(SimpleParser.isReturn(instructions)) {
+					Interpreter.funcReturn(input, instructionTokens, map, blockInstructionsMap, content);
+					return;
+				}
 				Interpreter.interpret(ifInstructions.get(j), instructionTokens, map, blockInstructionsMap);
 			}
 		}
 		else{
 			String[] instructionTokens;
 			for(int j = 0; j < elseInstructions.size(); j ++){
+				String instructions = elseInstructions.get(j);
+				instructionTokens = Tokenizer.tokenize(instructions);
+
+				if(SimpleParser.isReturn(instructions)) {
+					Interpreter.funcReturn(input, instructionTokens, map, blockInstructionsMap, content);
+					return;
+				}
 				instructionTokens = Tokenizer.tokenize(elseInstructions.get(j));
 				Interpreter.interpret(elseInstructions.get(j), instructionTokens, map, blockInstructionsMap);
 			}
@@ -372,7 +400,8 @@ public class Evaluator {
 
 	private static void runForLoop(Map<String, String> map, InstructionContent content,
 			HashMap<String, InstructionContent> blockInstructionsMap) {
-		List<String> instructions = content.getInstructions();
+		List<String> forInstructions = content.getInstructions();
+		String input = content.getBlockName();
 		String [] forLoopTokens = content.getBlockName().split("\\s");
 		String range = Interpreter.arrayToString(forLoopTokens, 3, forLoopTokens.length);
 		StringBuilder startRangeBuild = new StringBuilder();
@@ -409,9 +438,15 @@ public class Evaluator {
 		for(int i=Integer.parseInt(map.get(rangeVar)); i< Integer.parseInt(endRange); i++){
 			map.put(rangeVar, Integer.toString(i));
 					
-			for(int j = 0; j < instructions.size(); j ++){
-				instructionTokens = Tokenizer.tokenize(instructions.get(j));
-				Interpreter.interpret(instructions.get(j), instructionTokens, map,blockInstructionsMap );
+			for(int j = 0; j < forInstructions.size(); j ++){	
+				String instructions = forInstructions.get(j);
+				instructionTokens = Tokenizer.tokenize(instructions);
+				if(SimpleParser.isReturn(instructions)) {
+					Interpreter.funcReturn(input, instructionTokens, map, blockInstructionsMap, content);
+					return;
+				}
+				
+				Interpreter.interpret(instructions, instructionTokens, map,blockInstructionsMap );
 			}
 			
 		}
@@ -427,9 +462,9 @@ public class Evaluator {
 		
 		String leftString = conditionTokens[0];
 		
-		float left = Float.parseFloat(eval(leftString));
+		double left = Double.parseDouble(eval(leftString));
 		String rightString = conditionTokens[1];	
-		float right = Float.parseFloat(eval(rightString));
+		double right = Double.parseDouble(eval(rightString));
 	
 		switch(conditonOp){
 		case ">":
@@ -475,6 +510,24 @@ public class Evaluator {
 			}
 		}
 		return null;
+	}
+	public static String updateFunction(Map<String, String> map,String input, InstructionContent functionProperties) {	
+		StringBuilder builder = new StringBuilder();
+		for(int i = 0; i < input.length(); i ++) {
+			
+			if(Character.toString(input.charAt(i)).matches("\\s*\\/{2}|\\s*\\*{2}\\s*|\\s*(?<!e)[\\+|\\-|\\*|\\/|%]\\s*") && !builder.toString().matches(REGEXPARTIALMETHODSIG)) {
+				builder.setLength(0);
+				continue;
+			}
+			builder.append(input.charAt(i));
+			if(SimpleParser.isFunctionCall(builder.toString())) {
+				input = input.replace(builder.toString(), functionProperties.getReturnStatment());
+				builder.setLength(0);
+				i = 0;
+				
+			}
+		}
+		return input;
 	}
 
 }

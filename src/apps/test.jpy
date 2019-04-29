@@ -1,0 +1,79 @@
+def gallon2Liter(gallon):
+	liter = 3.78 * gallon
+	return liter
+q
+
+def areaCircle(radius):
+	return 3.14159*radius*radius
+q
+
+def areaEqTriangle(side):
+	area = (1.732/4) * (side**2)
+	return area
+q
+
+def makes10(a,b):
+	if a == 10:
+		print("True")
+		return 1
+	q
+	if b == 10:
+		print("True")
+		return 1
+	q
+	if a + b == 10:
+		print("True")
+		return 1
+	else:
+		print("False")
+		return 0
+	q
+q
+
+def makeBrikes(small, big, goal):
+	if small + (big * 5) < goal:
+		print("False")
+		return 0
+	q
+	if small < goal % 5:
+		print("False")
+		return 0
+	q
+	print("True")
+	return 1
+q
+
+def tipCalc(total, percent):
+	return total * (percent/100)
+q
+
+def printEven(a):
+	for x in range(a)
+		if x % 2 ==0:
+			print(x)
+		else:
+			print("Odd")
+		q
+	q
+q
+
+def sum(x):
+	if x == 1:
+		return x
+	else:
+		return sum(x-1) + x
+	q
+q
+
+def fact(x):
+	if x == 1:
+		return x
+	else:
+		return fact(x-1) * x
+	q
+q
+
+y = 10
+z = 20
+x = tipCalc(y, z)
+print(x)
