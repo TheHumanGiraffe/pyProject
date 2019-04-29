@@ -5,6 +5,9 @@
  - basic math
  - for loops
  - functions
+ - return statments
+ - recurssion
+ - recurssion
  - if else logic
  - variable comparison
  - variables
