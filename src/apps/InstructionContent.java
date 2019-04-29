@@ -10,6 +10,7 @@ public class InstructionContent {
 	private List<String> altInstructions = new ArrayList<String>();
 	private List<String> paramNames = new ArrayList<String>();
 	private int numOfParams;
+	private String returnStatment;
 	HashMap<String, String> localVarMap = new HashMap<>(); 
 	HashMap<String, InstructionContent> blockMap = new HashMap<>();
 	
@@ -38,6 +39,16 @@ public class InstructionContent {
 		this.instructions = instructions;
 		this.altInstructions = altInstructions;
 		
+	}
+	
+	public String getReturnStatment() {
+		String tmp = this.returnStatment;
+/*		this.returnStatment = "";
+*/		return tmp;
+	}
+	
+	public void setReturnStatment(String returnStatment) {
+		this.returnStatment = returnStatment;
 	}
 	
 	public HashMap<String, String> getLocalVarMap() {

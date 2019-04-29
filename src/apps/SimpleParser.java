@@ -1,7 +1,9 @@
 package apps;
 
 import static apps.Constants.REGEXCOMP;
+import static apps.Constants.REGEXPARTIALMETHODSIG;
 import static apps.Constants.REGEXVAR;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -31,6 +33,8 @@ public class SimpleParser {
 		
 		//if there's parenthesis, we should probably take care of that
 		if (s.contains("(")){s = handleParentheses(s);}
+		
+//		if (s == null || s == "" || s.matches("\\s*")) {return false;}
 		//if it's a single number, obv we want it to be valid
 		if (isNumber(s)) {return true;}		
 		
@@ -40,7 +44,11 @@ public class SimpleParser {
 		int stringIndex = 0;
 		int skipped = 0;
 		while (!(indexes[i][0] ==0 && indexes[i][1] ==0)) {
+//			System.out.println("skipped: " + skipped);
 			if (indexes[i+1][0] !=indexes[i][1]) {
+//				System.out.println(s.substring(stringIndex, indexes[i-1][0]));
+//				System.out.println(s.substring(indexes[i][1], s.length()));
+
 			if (isExpr(s.substring(stringIndex, indexes[i-skipped][0])) &&
 				(isExpr(s.substring(indexes[i][1], s.length())))){
 				return true;
@@ -55,6 +63,7 @@ public class SimpleParser {
 
 		}
 		return false;
+		
 	}
 	
 	/**
@@ -67,6 +76,7 @@ public class SimpleParser {
 	    Matcher matcher = pattern.matcher(text);
 	    int[][] locations = new int[500][2];
 	    int i = 0;
+	    // Check all occurrences
 	    String lastFound = new String();
 	    int lastEnd = 0;
 	    while (matcher.find()) {
@@ -81,17 +91,22 @@ public class SimpleParser {
 		        		int[][] x = new int[1][2];
 		        		x[0][0] = 0;
 		        		x[0][1] = 0;
-			        	// returning fail case
+//			        	System.out.println("returning fail case");
 		        		return x;
 		        	}
 	        	}
 		    }
 	        lastFound = matcher.group();
 	        lastEnd = matcher.end();
+
+//	        System.out.println(i);
 	        locations[i][0] = matcher.start();
 	        locations[i++][1] = matcher.end();
+//	        System.out.println("stuck in a while");
 	    }
+	    //System.out.println("returning");
 	    return locations;
+//	    System.out.println("match not found");
 	}
 		
 	/**
@@ -100,6 +115,7 @@ public class SimpleParser {
 	 * @return An array containing given problems without parentheses.
 	 */
 	public static String handleParentheses(String s) {
+//		System.out.println(s);
 		String temp = "";
 		
 		for (int i=0;i<s.length();i++) {
@@ -109,7 +125,12 @@ public class SimpleParser {
 				for (j = end;s.charAt(j)!='(';j--){
 					temp = s.charAt(j) + temp;
 				}
+				//System.out.println(s.charAt(j));
+				//System.out.println(s.charAt(end+1));
+//				System.out.println(temp); //pass this to a calculate function of some sort
+				//pretend this is the calculated value
 				temp = s.substring(0,j)+ "123 "+s.substring(end+2,s.length());
+				
 				s = handleParentheses(temp);
 				return s;
 			}
@@ -190,11 +211,8 @@ public class SimpleParser {
 					}
 					break;
 				}
-			}
-			
-			
+			}		
 		}
-	
 		return false;
 	}
 
@@ -249,8 +267,16 @@ public class SimpleParser {
 		return false;
 	}
 	
+	protected static boolean isReturn(String input) {
+		String[] tokens = input.split("\\s");
+		if(tokens[0].equals("return")) {
+			return true;
+		}
+		return false;
+	}
+	
 	protected static boolean containsVars(String[] tokens, int start, int end) {
-		for(int i =start; i <end; i++){
+		for(int i =start; i < end; i++){
 			if(tokens[i].matches(REGEXVAR)){
 				return true;		
 				}
@@ -258,4 +284,35 @@ public class SimpleParser {
 		return false;
 	}
 
+	public static boolean containsFunctionCall(String input) {
+		StringBuilder builder = new StringBuilder();
+		for(int i = 0; i < input.length(); i ++) {
+			if(Character.toString(input.charAt(i)).matches("\\s*\\/{2}|\\s*\\*{2}\\s*|\\s*(?<!e)[\\+|\\-|\\*|\\/|%]\\s*") && !builder.toString().matches(REGEXPARTIALMETHODSIG)) {
+				builder.setLength(0);
+			}
+			builder.append(input.charAt(i));
+			
+			if(SimpleParser.isFunctionCall(builder.toString())) {
+				return true;			
+			}
+		}
+		return false;
+	}
+
+	public static String getFunctionCall(String input) {
+		StringBuilder builder = new StringBuilder();
+		for(int i = 0; i < input.length(); i ++) {
+			
+			if(Character.toString(input.charAt(i)).matches("\\s*\\/{2}|\\s*\\*{2}\\s*|\\s*(?<!e)[\\+|\\-|\\*|\\/|%]\\s*") && !builder.toString().matches(REGEXPARTIALMETHODSIG)) {
+				builder.setLength(0);
+				continue;
+			}
+			builder.append(input.charAt(i));
+			if(SimpleParser.isFunctionCall(builder.toString())) {
+				return builder.toString();
+				
+			}
+		}
+		return input;
+	}
 }

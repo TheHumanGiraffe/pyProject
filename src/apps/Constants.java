@@ -5,6 +5,8 @@ public final class Constants {
 	private Constants(){
 		
 	}
+
+	
 	
 	public static final String REGEXVAR = "^[a-zA-Z_]+\\w*$";
 	public static final String REGEXVAR1 = "[a-zA-Z_]+\\w*";
@@ -21,4 +23,6 @@ public final class Constants {
 	public static final String REGEXCOMP = "[=]{2}|[>]|[<]|!=";
 	public static final String REGEXIF = String.format("if %s (%s) %s:", REGEXINTEGER, REGEXCOMP , REGEXINTEGER);
 	public static final String REGEXMETHODSIG = String.format("%s\\(%s\\):", REGEXVAR1, "([a-zA-Z0-9_]+)*(,\\s*[a-zA-Z0-9_]+)*");
+	public static final String REGEXPARTIALMETHODSIG = String.format("%s\\(%s", "([a-zA-Z_]+)", "([a-zA-Z_]*)");		
+	
 }
